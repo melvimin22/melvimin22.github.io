@@ -1,0 +1,2 @@
+# Lets GitHub Pages publish the .well-known folder (needed to hide the address bar).
+include: [".well-known"]

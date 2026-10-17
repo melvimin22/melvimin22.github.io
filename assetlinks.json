@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.melvimin22.twa",
+        "sha256_cert_fingerprints": ["E1:0D:D4:DF:55:FB:40:C6:91:F1:96:E3:50:0B:21:1D:3E:5C:7C:F2:55:9A:6D:B3:5C:F6:4C:5F:AE:DC:F0:2B"]
+      }
+    }]

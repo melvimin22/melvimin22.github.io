@@ -610,6 +610,9 @@ video {
 .inline-flex {
   display: inline-flex;
 }
+.table {
+  display: table;
+}
 .grid {
   display: grid;
 }
@@ -3102,6 +3105,170 @@ react-dom/cjs/react-dom-client.production.js:
   GLUTE_SLOTS.forEach((s) => Object.keys(s.v).forEach((eq) => {
     if (!VARIANTS[s.v[eq].id]) VARIANTS[s.v[eq].id] = { ...s.v[eq], slot: s.id };
   }));
+  const STRENGTH_A = [
+    {
+      id: "m-squat",
+      muscle: "Legs: quads and glutes",
+      target: "3 × 8–10",
+      rest: 120,
+      tempo: "3-1-1-0: lower for 3 seconds, pause 1, stand up strong",
+      v: {
+        gym: { id: "m-squat-bb", name: "Barbell Back Squat", cue: "Bar on your upper back, feet shoulder-width. Sit down between your heels with your chest up and knees following your toes." },
+        dumbbells: { id: "m-goblet-squat", name: "Goblet Squat", cue: "Hold one dumbbell at your chest. Sit down between your heels and keep your chest tall." },
+        bands: { id: "m-squat-band", name: "Banded Squat", cue: "Stand on the band with it looped over your shoulders. Squat deep and push the floor away." },
+        bodyweight: { id: "m-squat-bw", name: "Slow Bodyweight Squat", cue: "Arms forward for balance. Take 3 seconds down. When 20 reps feel easy, add a 3-second pause at the bottom." }
+      }
+    },
+    {
+      id: "m-push",
+      muscle: "Chest, shoulders and triceps",
+      target: "3 × 8–12",
+      rest: 90,
+      tempo: "2-0-1-0: lower for 2 seconds, push up smoothly",
+      v: {
+        gym: { id: "m-bench", name: "Bench Press", cue: "Feet planted, shoulder blades pinched together. Lower the bar to mid-chest, then press up." },
+        dumbbells: { id: "m-db-press", name: "Dumbbell Bench or Floor Press", cue: "On a bench or the floor. Lower until your upper arms touch, then press up together." },
+        bands: { id: "m-pushup-band", name: "Banded Push-up", cue: "Band across your upper back, ends under your hands. Body straight from head to heels." },
+        bodyweight: { id: "m-pushup", name: "Push-up", cue: "Hands a little wider than your shoulders, body straight. Too hard? Put your hands on a table or step." }
+      }
+    },
+    {
+      id: "m-row",
+      muscle: "Back and biceps",
+      target: "3 × 8–12",
+      rest: 90,
+      tempo: "1-1-2-0: pull in 1 second, squeeze 1, lower over 2",
+      v: {
+        gym: { id: "m-cable-row", name: "Seated Cable Row", cue: "Sit tall and pull the handle to your belly, squeezing your shoulder blades together." },
+        dumbbells: { id: "m-db-row", name: "One-Arm Dumbbell Row", cue: "Hand and knee on a bench or chair. Pull the dumbbell to your hip, not your chest." },
+        bands: { id: "m-row-band", name: "Banded Row", cue: "Anchor the band at chest height. Pull your elbows back past your ribs." },
+        bodyweight: { id: "m-table-row", name: "Table Row", cue: "Lie under a sturdy table, grip the edge and pull your chest up to it. Bend your knees to make it easier. Test the table first." }
+      }
+    },
+    {
+      id: "m-hinge",
+      muscle: "Hamstrings, glutes and lower back",
+      target: "3 × 8–10",
+      rest: 120,
+      tempo: "3-0-1-0: lower for 3 seconds, stand up smoothly",
+      v: {
+        gym: { id: "m-rdl", name: "Romanian Deadlift", cue: "Push your hips back with soft knees and keep the bar close to your legs. Stop when your back starts to round." },
+        dumbbells: { id: "m-rdl-db", name: "Dumbbell Romanian Deadlift", cue: "Let the dumbbells slide down the front of your thighs as your hips travel back." },
+        bands: { id: "m-goodmorning-band", name: "Banded Good Morning", cue: "Band under your feet and behind your neck. Hinge until you feel a deep hamstring stretch." },
+        bodyweight: { id: "m-rdl-sl", name: "Single-Leg Romanian Deadlift", cue: "Hinge on one leg with a long, flat back. Touch a wall lightly if balance limits you." }
+      }
+    },
+    {
+      id: "m-core",
+      muscle: "Core",
+      target: "3 × 10 per side",
+      rest: 60,
+      tempo: "2-1-2-0: slow and controlled, breathe out as you reach",
+      v: {
+        gym: { id: "m-knee-raise", name: "Hanging Knee Raise", cue: "Hang from a bar and curl your knees up toward your chest without swinging." },
+        dumbbells: { id: "m-deadbug", name: "Dead Bug", cue: "On your back, arms up, knees bent. Lower the opposite arm and leg slowly while your lower back stays on the floor." },
+        bands: { id: "m-deadbug", name: "Dead Bug", cue: "On your back, arms up, knees bent. Lower the opposite arm and leg slowly while your lower back stays on the floor." },
+        bodyweight: { id: "m-deadbug", name: "Dead Bug", cue: "On your back, arms up, knees bent. Lower the opposite arm and leg slowly while your lower back stays on the floor." }
+      }
+    }
+  ];
+  const STRENGTH_B = [
+    {
+      id: "m-deadlift",
+      muscle: "Glutes, hamstrings and back",
+      target: "3 × 5–8",
+      rest: 150,
+      tempo: "1-0-2-0: drive up, lower with control",
+      v: {
+        gym: { id: "m-deadlift-bb", name: "Deadlift", cue: "Bar over the middle of your feet, flat back, then push the floor away. Stand tall without leaning back." },
+        dumbbells: { id: "m-deadlift-db", name: "Dumbbell Deadlift", cue: "Dumbbells beside your feet. Flat back, hips down, then stand up tall." },
+        bands: { id: "m-deadlift-band", name: "Banded Deadlift", cue: "Stand on the band and hold it low. Hinge with a flat back and stand up tall." },
+        bodyweight: { id: "m-hip-thrust-bw", name: "Single-Leg Hip Thrust", cue: "Shoulders on a sofa or bed edge, one foot planted. Drive your hips up and squeeze at the top." }
+      }
+    },
+    {
+      id: "m-press",
+      muscle: "Shoulders and triceps",
+      target: "3 × 8–12",
+      rest: 90,
+      tempo: "1-0-2-0: press up, lower over 2 seconds",
+      v: {
+        gym: { id: "m-ohp", name: "Overhead Press", cue: "Squeeze your glutes and press the bar straight up, moving your head through at the top." },
+        dumbbells: { id: "m-db-ohp", name: "Dumbbell Shoulder Press", cue: "Seated or standing. Press up and slightly in, then lower to ear height." },
+        bands: { id: "m-ohp-band", name: "Banded Shoulder Press", cue: "Stand on the band and press the ends straight overhead." },
+        bodyweight: { id: "m-pike-pushup", name: "Pike Push-up", cue: "Hips high, lower your head toward the floor between your hands. Feet on a chair makes it harder." }
+      }
+    },
+    {
+      id: "m-lunge",
+      muscle: "Legs: quads and glutes",
+      target: "3 × 10 per leg",
+      rest: 90,
+      tempo: "2-0-1-0: lower for 2 seconds, push back up",
+      v: {
+        gym: { id: "m-bss", name: "Bulgarian Split Squat", cue: "Rear foot on a bench, dumbbells at your sides. Drop your back knee straight down." },
+        dumbbells: { id: "m-lunge-db", name: "Dumbbell Reverse Lunge", cue: "Step back and drop your back knee toward the floor, then push through your front heel." },
+        bands: { id: "m-split-band", name: "Banded Split Squat", cue: "Stand on the band in a long split stance and press up through your front heel." },
+        bodyweight: { id: "m-lunge-bw", name: "Reverse Lunge", cue: "Step back and lower slowly. Add a pause at the bottom when it gets easy." }
+      }
+    },
+    {
+      id: "m-pulldown",
+      muscle: "Back (lats) and biceps",
+      target: "3 × 8–12",
+      rest: 90,
+      tempo: "1-1-2-0: pull in 1 second, squeeze 1, return over 2",
+      v: {
+        gym: { id: "m-pulldown-cable", name: "Lat Pull-down", cue: "Pull the bar to your upper chest, driving your elbows down and back." },
+        dumbbells: { id: "m-db-pullover", name: "Dumbbell Pullover", cue: "Upper back across a bench. Lower the dumbbell behind your head with slightly bent arms, then pull it back over your chest." },
+        bands: { id: "m-pulldown-band", name: "Banded Pull-down", cue: "Anchor the band high. Kneel and pull your elbows down to your sides." },
+        bodyweight: { id: "m-prone-pull", name: "Lying Lat Pull", cue: "Face down, arms overhead. Lift your arms slightly and pull your elbows down to your sides, squeezing your back." }
+      }
+    },
+    {
+      id: "m-core2",
+      muscle: "Core and lower back",
+      target: "3 × 10 per side",
+      rest: 60,
+      tempo: "2-1-2-0: slow and controlled, hips stay level",
+      v: {
+        gym: { id: "m-pallof", name: "Pallof Press", cue: "Stand side-on to a cable at chest height. Press the handle straight out and resist the twist." },
+        dumbbells: { id: "m-birddog", name: "Bird Dog", cue: "On hands and knees. Reach the opposite arm and leg out long without your hips tipping." },
+        bands: { id: "m-pallof-band", name: "Banded Pallof Press", cue: "Anchor the band at chest height, stand side-on, press out and resist the twist." },
+        bodyweight: { id: "m-birddog", name: "Bird Dog", cue: "On hands and knees. Reach the opposite arm and leg out long without your hips tipping." }
+      }
+    }
+  ];
+  const STRENGTH_SLOTS = [...STRENGTH_A, ...STRENGTH_B];
+  STRENGTH_SLOTS.forEach((s) => Object.keys(s.v).forEach((eq) => {
+    if (!VARIANTS[s.v[eq].id]) VARIANTS[s.v[eq].id] = { ...s.v[eq], slot: s.id };
+  }));
+  const STRENGTH_WARMUP = [
+    { id: "sw-pulse", name: "2 minutes of skipping, jumping jacks or marching on the spot" },
+    { id: "sw-squat", name: "10 slow bodyweight squats" },
+    { id: "sw-arms", name: "10 arm circles each way, then 10 arm swings across your chest" },
+    { id: "sw-hinge", name: "10 hip hinges: hands on hips, push your hips back with a flat back" },
+    { id: "sw-light", name: "One light set of your first exercise" }
+  ];
+  const slotIds = (slots) => new Set(slots.reduce((a, s) => a.concat(Object.keys(s.v).map((eq) => s.v[eq].id)), []));
+  const A_IDS = slotIds(STRENGTH_A);
+  const B_IDS = slotIds(STRENGTH_B);
+  const strengthDone = (d) => !!d && Object.keys(d.lifts || {}).some((k) => (A_IDS.has(k) || B_IDS.has(k)) && (d.lifts[k] || []).length > 0);
+  function sessionOfDay(d) {
+    if (!d) return null;
+    if (d.strength === "A" || d.strength === "B") return d.strength;
+    const keys = Object.keys(d.lifts || {}).filter((k) => (d.lifts[k] || []).length);
+    const a = keys.filter((k) => A_IDS.has(k)).length;
+    const b = keys.filter((k) => B_IDS.has(k)).length;
+    return a > b ? "A" : b > a ? "B" : null;
+  }
+  function suggestSession(today) {
+    for (let i = 1; i <= 28; i++) {
+      const s = sessionOfDay(readDay(shiftKey(today, -i)));
+      if (s) return s === "A" ? "B" : "A";
+    }
+    return "A";
+  }
   const WARMUP = [
     { id: "wu-bridge", name: "Banded glute bridges", dose: "2 × 15" },
     { id: "wu-clam", name: "Banded clamshells", dose: "2 × 12 per side" },
@@ -4084,9 +4251,10 @@ react-dom/cjs/react-dom-client.production.js:
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("section", { className: "flex items-center gap-5 px-1 pt-1", "aria-label": "Calories today" }, /* @__PURE__ */ React.createElement(SandGlass, { eaten: poured ? eaten.kcal : 0, target: t.kcal, height: 176 }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, left >= 0 ? "Calories left" : "Over your target"), /* @__PURE__ */ React.createElement("p", { className: `font-display text-[44px] font-bold leading-[1.02] tracking-tight tabular-nums ${left < 0 ? "text-danger" : ""}` }, thousands(Math.abs(left))), /* @__PURE__ */ React.createElement("dl", { className: "mt-3 space-y-1 text-[14px]" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("dt", { className: "text-muted" }, "Eaten"), /* @__PURE__ */ React.createElement("dd", { className: "font-semibold tabular-nums" }, thousands(eaten.kcal))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("dt", { className: "text-muted" }, "Target"), /* @__PURE__ */ React.createElement("dd", { className: "font-semibold tabular-nums" }, thousands(t.kcal)))), sculpt && /* @__PURE__ */ React.createElement("p", { className: "mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-[13px] font-semibold text-accentink" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, DAY_TYPES[t.dayType].emoji), DAY_TYPES[t.dayType].name))), /* @__PURE__ */ React.createElement(CheckinCard, { onOpen: () => setCheckOpen(true) }), /* @__PURE__ */ React.createElement(EnergyCard, null), /* @__PURE__ */ React.createElement(ActivityPanel, null), /* @__PURE__ */ React.createElement(Panel, { className: "grid grid-cols-3 gap-4", "aria-label": "Macros today" }, /* @__PURE__ */ React.createElement(MacroMini, { label: "Protein", eaten: eaten.p, target: t.protein, color: "--protein" }), /* @__PURE__ */ React.createElement(MacroMini, { label: "Carbs", eaten: eaten.c, target: t.carbs, color: "--carbs" }), /* @__PURE__ */ React.createElement(MacroMini, { label: "Fats", eaten: eaten.f, target: t.fat, color: "--fat" })), /* @__PURE__ */ React.createElement(ProteinTopUpCard, null), sculpt && /* @__PURE__ */ React.createElement(DayTypeSwitch, { dateK: today, compact: true }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(WaterTile, null), profile.sex === "female" ? /* @__PURE__ */ React.createElement(TrainingTile, null) : /* @__PURE__ */ React.createElement(BodyTile, null)), /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", onClick: () => go("food", "add") }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 20 }), "Log food"), /* @__PURE__ */ React.createElement(Btn, { size: "lg", variant: "soft", className: "w-full", onClick: () => setIdeasOpen(true) }, /* @__PURE__ */ React.createElement(Icon, { name: "Sparkles", size: 20 }), "What should I eat?"), streak > 1 && /* @__PURE__ */ React.createElement("p", { className: "text-center text-[13px] text-muted" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🔥 "), streak, "-day logging streak"), /* @__PURE__ */ React.createElement(CheckinSheet, { open: checkOpen, onClose: () => setCheckOpen(false) }), /* @__PURE__ */ React.createElement(MealIdeasSheet, { open: ideasOpen, onClose: () => setIdeasOpen(false) }));
   }
   function BodyTile() {
-    const { getMeasures, go } = useApp();
-    const last = getMeasures().filter((m) => m.waistCm > 0 && m.hipsCm > 0).pop();
-    return /* @__PURE__ */ React.createElement(Panel, { as: "button", type: "button", onClick: () => go("sculpt"), className: "press flex flex-col text-left" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5 text-[13px] font-medium text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "Ruler", size: 15, className: "text-accentink" }), "Waist-to-hip"), /* @__PURE__ */ React.createElement("span", { className: "mt-1 font-display text-[22px] font-bold tabular-nums" }, last ? (last.waistCm / last.hipsCm).toFixed(2) : "None", /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-sans text-[14px] font-medium text-muted" }, last ? `on ${shortDate(last.date)}` : "logged yet")), /* @__PURE__ */ React.createElement("span", { className: "mt-auto pt-3 text-[13px] font-semibold text-accentink" }, "Open Body"));
+    const { today, getDay, go } = useApp();
+    const week = weekOf(today).filter((k) => strengthDone(getDay(k))).length;
+    const trainedNow = strengthDone(getDay(today));
+    return /* @__PURE__ */ React.createElement(Panel, { as: "button", type: "button", onClick: () => go("sculpt"), className: "press flex flex-col text-left" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5 text-[13px] font-medium text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "Dumbbell", size: 15, className: "text-accentink" }), "Strength"), /* @__PURE__ */ React.createElement("span", { className: "mt-1 font-display text-[22px] font-bold tabular-nums" }, week, "/3", /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-sans text-[14px] font-medium text-muted" }, "this week")), /* @__PURE__ */ React.createElement("span", { className: "mt-auto pt-3 text-[13px] font-semibold text-accentink" }, trainedNow ? "Trained today. Nice work" : `Session ${suggestSession(today)} next`));
   }
   const LEVEL_LABEL = { easy: "Easy", moderate: "Medium", hard: "Hard" };
   function BurnBar({ eat, burn }) {
@@ -5459,7 +5627,7 @@ react-dom/cjs/react-dom-client.production.js:
     };
     const remove = (id) => updateDay(today, (d) => ({ ...d, lifts: { ...d.lifts, [v.id]: (d.lifts[v.id] || []).filter((e) => e.id !== id) } }));
     const volume = entries.reduce((a, e) => a + e.sets * e.reps * e.kg, 0);
-    return /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "font-display text-[16px] font-semibold leading-snug tracking-tight" }, v.name), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[13px] font-medium leading-snug text-accentink" }, slot.muscle)), pb ? /* @__PURE__ */ React.createElement("span", { className: "flex shrink-0 items-center gap-1 rounded-full bg-carbs/15 px-2.5 py-1 text-[12px] font-bold tabular-nums" }, /* @__PURE__ */ React.createElement(Icon, { name: "Trophy", size: 13, className: "text-carbs" }), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Personal best "), fmtW(pb.kg, unit), " × ", pb.reps) : /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-raised px-2.5 py-1 text-[12px] font-semibold text-muted" }, "No PB yet")), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement(Segmented, { size: "sm", label: `Equipment for ${v.name}`, options: EQUIPMENT.map((x) => ({ value: x.id, label: x.short })), value: equip, onChange: setEquip })), /* @__PURE__ */ React.createElement("p", { className: "mt-2.5 text-[13px] leading-snug text-muted" }, v.cue), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug" }, /* @__PURE__ */ React.createElement("b", { className: "font-semibold" }, "Tempo"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-muted" }, slot.tempo)), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-2 text-[13px]" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-raised px-3 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-muted" }, "Target"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, slot.target)), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-raised px-3 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-muted" }, "Last session"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold tabular-nums" }, last ? `${last.sets} × ${last.reps} at ${fmtW(last.kg, unit)}` : "First session"))), last && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[12px] leading-snug text-muted" }, "To progress: ", last.kg > 0 ? `try ${t1(wOut(last.kg, unit) + inc)} ${wUnit(unit)} × ${last.reps}, or ` : "", last.reps + 1, " reps at ", fmtW(last.kg, unit), "."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-[1fr_1fr_1.4fr_auto] items-end gap-2" }, /* @__PURE__ */ React.createElement(Field, { label: "Sets", value: form.sets, onChange: set("sets"), inputMode: "numeric" }), /* @__PURE__ */ React.createElement(Field, { label: "Reps", value: form.reps, onChange: set("reps"), inputMode: "numeric" }), /* @__PURE__ */ React.createElement(Field, { label: "Weight", suffix: wUnit(unit), value: form.w, onChange: set("w"), placeholder: "0" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: log, "aria-label": `Log ${v.name}`, className: "press grid h-12 w-12 place-items-center rounded-2xl bg-accent text-onaccent" }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 22, stroke: 2.5 }))), entries.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-3 divide-y divide-line/50 border-t border-line/50" }, entries.map((e) => /* @__PURE__ */ React.createElement("li", { key: e.id, className: "flex items-center gap-2 py-1.5 text-[14px]" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 font-semibold tabular-nums" }, e.sets, " × ", e.reps, " at ", fmtW(e.kg, unit)), pb && pb.id === e.id && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-[12px] font-semibold text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "Trophy", size: 14, className: "text-carbs" }), "PB"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Delete ${e.sets} × ${e.reps} at ${fmtW(e.kg, unit)}`, onClick: () => remove(e.id), className: "press grid h-10 w-10 place-items-center rounded-lg text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "X", size: 16 })))), /* @__PURE__ */ React.createElement("li", { className: "pt-2 text-[12px] tabular-nums text-muted" }, "Session volume: ", thousands(wOut(volume, unit)), " ", wUnit(unit))));
+    return /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "font-display text-[16px] font-semibold leading-snug tracking-tight" }, v.name), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[13px] font-medium leading-snug text-accentink" }, slot.muscle)), pb ? /* @__PURE__ */ React.createElement("span", { className: "flex shrink-0 items-center gap-1 rounded-full bg-carbs/15 px-2.5 py-1 text-[12px] font-bold tabular-nums" }, /* @__PURE__ */ React.createElement(Icon, { name: "Trophy", size: 13, className: "text-carbs" }), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Personal best "), fmtW(pb.kg, unit), " × ", pb.reps) : /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-raised px-2.5 py-1 text-[12px] font-semibold text-muted" }, "No PB yet")), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement(Segmented, { size: "sm", label: `Equipment for ${v.name}`, options: EQUIPMENT.map((x) => ({ value: x.id, label: x.short })), value: equip, onChange: setEquip })), /* @__PURE__ */ React.createElement("p", { className: "mt-2.5 text-[13px] leading-snug text-muted" }, v.cue), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug" }, /* @__PURE__ */ React.createElement("b", { className: "font-semibold" }, "Tempo"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-muted" }, slot.tempo)), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-2 text-[13px]" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-raised px-3 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-muted" }, "Target"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, slot.target)), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-raised px-3 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-muted" }, "Last session"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold tabular-nums" }, last ? `${last.sets} × ${last.reps} at ${fmtW(last.kg, unit)}` : "First session"))), last && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[12px] leading-snug text-muted" }, "To progress: ", last.kg > 0 ? `try ${t1(wOut(last.kg, unit) + inc)} ${wUnit(unit)} × ${last.reps}, or ` : "", last.reps + 1, " reps at ", fmtW(last.kg, unit), "."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-[1fr_1fr_1.4fr_auto] items-end gap-2" }, /* @__PURE__ */ React.createElement(Field, { label: "Sets", value: form.sets, onChange: set("sets"), inputMode: "numeric" }), /* @__PURE__ */ React.createElement(Field, { label: "Reps", value: form.reps, onChange: set("reps"), inputMode: "numeric" }), /* @__PURE__ */ React.createElement(Field, { label: "Weight", suffix: wUnit(unit), value: form.w, onChange: set("w"), placeholder: "0" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: log, "aria-label": `Log ${v.name}`, className: "press grid h-12 w-12 place-items-center rounded-2xl bg-accent text-onaccent" }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 22, stroke: 2.5 }))), entries.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-3 divide-y divide-line/50 border-t border-line/50" }, entries.map((e) => /* @__PURE__ */ React.createElement("li", { key: e.id, className: "flex items-center gap-2 py-1.5 text-[14px]" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 font-semibold tabular-nums" }, e.sets, " × ", e.reps, " at ", fmtW(e.kg, unit)), pb && pb.id === e.id && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-[12px] font-semibold text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "Trophy", size: 14, className: "text-carbs" }), "PB"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Delete ${e.sets} × ${e.reps} at ${fmtW(e.kg, unit)}`, onClick: () => remove(e.id), className: "press grid h-10 w-10 place-items-center rounded-lg text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "X", size: 16 })))), volume > 0 && /* @__PURE__ */ React.createElement("li", { className: "pt-2 text-[12px] tabular-nums text-muted" }, "Session volume: ", thousands(wOut(volume, unit)), " ", wUnit(unit))));
   }
   function RestBar({ rest, onAdd, onDone }) {
     const [now, setNow] = useState(Date.now());
@@ -5511,7 +5679,7 @@ react-dom/cjs/react-dom-client.production.js:
     const dt = dayTypeOf(day, today);
     const restDay = day.checkin && day.checkin.focus === "rest";
     const sculpt = profile.program === "sculpt";
-    if (profile.sex !== "female") return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement(HourglassTracker, null));
+    if (profile.sex !== "female") return /* @__PURE__ */ React.createElement(StrengthHub, null);
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, !sculpt && /* @__PURE__ */ React.createElement(Panel, { className: "border-2 border-dashed border-line" }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, "Calorie cycling is off"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[14px] leading-snug text-muted" }, "You're on ", programOf(profile.program).name, ". Switch programs to let the day type set your calories and macros. Workouts and measurements work either way."), /* @__PURE__ */ React.createElement(Btn, { size: "sm", className: "mt-3", onClick: () => {
       saveProfile({ ...profile, program: "sculpt" });
       toast("Switched to Female Glute & Slim Waist Sculpt");
@@ -5730,6 +5898,68 @@ react-dom/cjs/react-dom-client.production.js:
     };
     return /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(SectionHead, { title: profile.sex === "female" ? "Hourglass tracker" : "Body measurements", sub: profile.sex === "female" ? "Waist trending down, glutes trending up." : "Your waist, hips and weight over time.", aside: /* @__PURE__ */ React.createElement(Btn, { size: "sm", onClick: () => setOpen(true) }, /* @__PURE__ */ React.createElement(Icon, { name: "Ruler", size: 16 }), "Log") }), /* @__PURE__ */ React.createElement(Panel, null, latest ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-end justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, "Waist-to-hip ratio", /* @__PURE__ */ React.createElement(InfoTip, { text: "Your waist divided by your hips. A lower number means a more defined waist. The World Health Organization links 0.85 and above in women, and 0.90 and above in men, to higher health risk." })), /* @__PURE__ */ React.createElement("p", { className: "font-display text-[40px] font-bold leading-none tabular-nums" }, ratio(latest).toFixed(2))), changed && /* @__PURE__ */ React.createElement(DeltaChip, { value: ratio(latest) - ratio(first), good: "down", digits: 2, label: "since start" })), /* @__PURE__ */ React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(MiniStat, { label: "Waist", value: `${t1(lenOut(latest.waistCm, unit))} ${lenUnit(unit)}`, delta: changed ? lenOut(latest.waistCm - first.waistCm, unit) : null, good: "down", unit: lenUnit(unit) }), /* @__PURE__ */ React.createElement(MiniStat, { label: profile.sex === "female" ? "Glutes / hips" : "Hips", value: `${t1(lenOut(latest.hipsCm, unit))} ${lenUnit(unit)}`, delta: changed ? lenOut(latest.hipsCm - first.hipsCm, unit) : null, good: "up", unit: lenUnit(unit) }))) : /* @__PURE__ */ React.createElement("div", { className: "py-3 text-center" }, /* @__PURE__ */ React.createElement("p", { className: "text-[32px]", "aria-hidden": "true" }, "⏳"), /* @__PURE__ */ React.createElement("p", { className: "mt-2 font-semibold" }, profile.sex === "female" ? "Set your hourglass baseline" : "Set your baseline"), /* @__PURE__ */ React.createElement("p", { className: "mx-auto mt-1 max-w-[280px] text-[14px] leading-snug text-muted" }, "Log your waist and hips to calculate your waist-to-hip ratio and start the trend line."), /* @__PURE__ */ React.createElement(Btn, { className: "mt-4", onClick: () => setOpen(true) }, "Log measurements")), list.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-5" }, /* @__PURE__ */ React.createElement(Segmented, { size: "sm", label: "Chart", options: [{ value: "shape", label: "Waist & hips" }, { value: "whr", label: "Ratio" }, { value: "weight", label: "Weight" }], value: view, onChange: setView }), /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, chartData.length ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ChartLegend, { series: V.series }), /* @__PURE__ */ React.createElement(TrendChart, { data: chartData, series: V.series, refY: V.refY, refLabel: V.refLabel, unit: V.unit, height: 200 }), chartData.length === 1 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-center text-[12px] text-muted" }, "Log again next week to see a trend line.")) : /* @__PURE__ */ React.createElement("p", { className: "py-8 text-center text-[14px] text-muted" }, "No ", view === "weight" ? "weight" : "waist and hip", " entries yet.")))), list.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "group mt-3 rounded-[20px] bg-surface px-4 py-3" }, /* @__PURE__ */ React.createElement("summary", { className: "flex cursor-pointer list-none items-center justify-between text-[14px] font-semibold [&::-webkit-details-marker]:hidden" }, "Measurement history (", list.length, ")", /* @__PURE__ */ React.createElement(Icon, { name: "ChevronDown", size: 18, className: "text-muted transition-transform group-open:rotate-180" })), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 divide-y divide-line/50" }, list.slice().reverse().map((m) => /* @__PURE__ */ React.createElement("li", { key: m.date, className: "flex items-center gap-2 py-2 text-[14px]" }, /* @__PURE__ */ React.createElement("span", { className: "w-16 shrink-0 font-semibold" }, shortDate(m.date)), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-[13px] leading-snug tabular-nums text-muted" }, [m.waistCm > 0 && `waist ${t1(lenOut(m.waistCm, unit))}`, m.hipsCm > 0 && `hips ${t1(lenOut(m.hipsCm, unit))} ${lenUnit(unit)}`, m.weightKg > 0 && fmtW(m.weightKg, unit)].filter(Boolean).join(", ")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Delete ${shortDate(m.date)} measurements`, onClick: () => remove(m), className: "press grid h-10 w-10 shrink-0 place-items-center rounded-lg text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "Trash2", size: 16 })))))), /* @__PURE__ */ React.createElement(MeasureSheet, { open, onClose: () => setOpen(false) }));
   }
+  function StrengthWarmup() {
+    const { today, getDay, updateDay } = useApp();
+    const checks = getDay(today).checks || {};
+    const done = STRENGTH_WARMUP.filter((w) => checks[w.id]).length;
+    const [open, setOpen] = useState(done < STRENGTH_WARMUP.length);
+    const toggle = (id) => updateDay(today, (d) => ({ ...d, checks: { ...d.checks || {}, [id]: !(d.checks || {})[id] } }));
+    return /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setOpen((o) => !o), "aria-expanded": open, className: "flex w-full items-center justify-between gap-3 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-semibold" }, "Warm-up"), /* @__PURE__ */ React.createElement("span", { className: "block text-[12px] text-muted" }, "About 5 minutes. ", done, " of ", STRENGTH_WARMUP.length, " done.")), /* @__PURE__ */ React.createElement(Icon, { name: "ChevronDown", size: 18, className: `shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}` })), open && /* @__PURE__ */ React.createElement("ul", { className: "mt-3 space-y-2" }, STRENGTH_WARMUP.map((w) => /* @__PURE__ */ React.createElement("li", { key: w.id }, /* @__PURE__ */ React.createElement("button", { type: "button", role: "checkbox", "aria-checked": !!checks[w.id], onClick: () => toggle(w.id), className: "press flex w-full items-center gap-3 rounded-2xl bg-raised px-3 py-2.5 text-left" }, /* @__PURE__ */ React.createElement("span", { className: `grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 ${checks[w.id] ? "border-success bg-success text-white" : "border-line"}`, "aria-hidden": "true" }, checks[w.id] && /* @__PURE__ */ React.createElement(Icon, { name: "Check", size: 14, stroke: 3 })), /* @__PURE__ */ React.createElement("span", { className: "text-[14px] leading-snug" }, w.name))))));
+  }
+  const DOW_LETTER = ["S", "M", "T", "W", "T", "F", "S"];
+  function StrengthWeek() {
+    const { today, getDay } = useApp();
+    const days = weekOf(today);
+    const trained = days.filter((k) => strengthDone(getDay(k))).length;
+    return /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline justify-between" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, "This week"), /* @__PURE__ */ React.createElement("p", { className: `text-[13px] font-semibold tabular-nums ${trained >= 3 ? "text-success" : ""}` }, trained, " of 3 sessions")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid grid-cols-7 gap-1.5", "aria-label": `${trained} of 3 sessions this week` }, days.map((k) => {
+      const on = strengthDone(getDay(k));
+      return /* @__PURE__ */ React.createElement("div", { key: k, className: `flex flex-col items-center gap-1 rounded-xl py-1.5 ${k === today ? "bg-raised" : ""}` }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-semibold text-muted" }, DOW_LETTER[(/* @__PURE__ */ new Date(k + "T12:00:00")).getDay()]), /* @__PURE__ */ React.createElement("span", { className: `grid h-6 w-6 place-items-center rounded-full ${on ? "bg-accent text-onaccent" : "border-2 border-line"}`, "aria-hidden": "true" }, on && /* @__PURE__ */ React.createElement(Icon, { name: "Check", size: 13, stroke: 3 })));
+    })));
+  }
+  function StrengthSession() {
+    const { today, getDay, updateDay, rev, toast } = useApp();
+    const day = getDay(today);
+    const hist = useMemo(() => readLiftHistory(), [rev]);
+    const suggested = useMemo(() => suggestSession(today), [today, rev]);
+    const lifts = day.lifts || {};
+    const which = day.strength || sessionOfDay(day) || suggested;
+    const slots = which === "B" ? STRENGTH_B : STRENGTH_A;
+    const [rest, setRest] = useState(null);
+    const done = slots.filter((s) => Object.keys(s.v).some((eq) => (lifts[s.v[eq].id] || []).length)).length;
+    const pick = (v) => {
+      if (v !== which) updateDay(today, (d) => ({ ...d, strength: v }));
+    };
+    return /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(
+      SectionHead,
+      {
+        title: "Strength session",
+        sub: "Beat last time by a rep or a little weight.",
+        aside: /* @__PURE__ */ React.createElement("span", { className: `text-[13px] font-semibold tabular-nums ${done === slots.length ? "text-success" : "text-muted"}` }, done, "/", slots.length, " done")
+      }
+    ), /* @__PURE__ */ React.createElement(Segmented, { label: "Session", options: [{ value: "A", label: "Session A" }, { value: "B", label: "Session B" }], value: which, onChange: pick }), /* @__PURE__ */ React.createElement("p", { className: "mt-2 px-1 text-[13px] leading-snug text-muted" }, which === "A" ? "Squat, push, row, hinge and core." : "Deadlift, overhead press, lunge, pull-down and core.", which === suggested ? " Next in your rotation." : ""), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement(StrengthWarmup, null)), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-3" }, slots.map((s) => /* @__PURE__ */ React.createElement(ExerciseCard, { key: s.id, slot: s, lifts, hist, onRest: (secs, name) => setRest({ endAt: Date.now() + secs * 1e3, name }) }))), rest && /* @__PURE__ */ React.createElement(
+      RestBar,
+      {
+        rest,
+        onAdd: () => setRest((r) => ({ ...r, endAt: r.endAt + 3e4 })),
+        onDone: (fin) => {
+          setRest(null);
+          if (fin) toast("Rest done. Time for your next set.");
+        }
+      }
+    ));
+  }
+  function StrengthHub() {
+    const { profile, saveProfile, today, getDay, toast } = useApp();
+    const day = getDay(today);
+    const restDay = day.checkin && day.checkin.focus === "rest";
+    const eq = profile.equipment || "gym";
+    const setEq = (v) => {
+      if (v === eq) return;
+      saveProfile({ ...profile, equipment: v });
+      toast(`Exercises set for ${EQUIPMENT.find((x) => x.id === v).label.toLowerCase()}`);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("p", { className: "font-display text-[17px] font-semibold tracking-tight" }, "Strength plan"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, "Three full-body sessions a week, alternating A and B, with a rest day in between. Add a rep or a little weight each week and keep your protein up. That’s what builds muscle."), /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 mt-3 text-[13px] font-medium text-muted" }, "What you train with"), /* @__PURE__ */ React.createElement(Segmented, { size: "sm", label: "Equipment", options: EQUIPMENT.map((x) => ({ value: x.id, label: x.short })), value: eq, onChange: setEq }), /* @__PURE__ */ React.createElement(StrengthWeek, null)), restDay && /* @__PURE__ */ React.createElement(Panel, { className: "border-2 border-dashed border-line" }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, "Rest day"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[14px] leading-snug text-muted" }, "You chose rest today. Muscle grows while you recover, so train tomorrow, or start a session below if you feel good.")), /* @__PURE__ */ React.createElement(StrengthSession, { key: eq }), /* @__PURE__ */ React.createElement(HourglassTracker, null));
+  }
   function StatTile({ label, value, unit, sub }) {
     return /* @__PURE__ */ React.createElement("div", { className: "rounded-[20px] bg-surface p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, label), /* @__PURE__ */ React.createElement("p", { className: "mt-1 font-display text-[24px] font-bold leading-tight tabular-nums" }, value, unit && /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-sans text-[13px] font-medium text-muted" }, unit)), sub && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[12px] leading-snug text-muted" }, sub));
   }
@@ -5772,13 +6002,13 @@ react-dom/cjs/react-dom-client.production.js:
   function PersonalBests({ hist }) {
     const { profile } = useApp();
     const ids = [];
-    GLUTE_SLOTS.forEach((s) => {
+    (profile.sex === "female" ? GLUTE_SLOTS : STRENGTH_SLOTS).forEach((s) => {
       const own = Object.keys(hist).filter((id) => VARIANTS[id] && VARIANTS[id].slot === s.id);
       (own.length ? own : [(s.v[profile.equipment] || s.v.gym).id]).forEach((id) => {
         if (!ids.includes(id)) ids.push(id);
       });
     });
-    return /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Personal bests", sub: "Heaviest set for each glute exercise you've logged." }), /* @__PURE__ */ React.createElement(Panel, { className: "divide-y divide-line/50 py-1" }, ids.map((id) => {
+    return /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Personal bests", sub: profile.sex === "female" ? "Heaviest set for each glute exercise you’ve logged." : "Best set for each strength exercise you’ve logged." }), /* @__PURE__ */ React.createElement(Panel, { className: "divide-y divide-line/50 py-1" }, ids.map((id) => {
       const h = hist[id] || [];
       const pb = bestOf(h.reduce((a, x) => a.concat(x.entries), []));
       const pbDay = pb ? h.find((x) => x.entries.some((e) => e.id === pb.id)) : null;
@@ -5877,19 +6107,19 @@ react-dom/cjs/react-dom-client.production.js:
         empty: !rows.some((r) => r.water > 0),
         emptyText: "Tap the glasses on the Food tab to track water."
       }
-    ), profile.sex === "female" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(
       ChartPanel,
       {
-        title: "Glute training load",
+        title: profile.sex === "female" ? "Glute training load" : "Strength training load",
         sub: "Total weight lifted in each session (sets × reps × weight).",
         series: [{ key: "volume", name: "Volume", type: "bar", color: pal.glute }],
         data: sessions,
         yDomain: [0, "auto"],
         unit: ` ${wUnit(unit)}`,
         empty: !sessions.length,
-        emptyText: "Log a Glute Builder session to see your volume."
+        emptyText: profile.sex === "female" ? "Log a Glute Builder session to see your volume." : "Log a strength session to see your volume."
       }
-    ), profile.sex === "female" && /* @__PURE__ */ React.createElement(PersonalBests, { hist }));
+    ), /* @__PURE__ */ React.createElement(PersonalBests, { hist }));
   }
   const TABS = [
     { id: "home", label: "Today", icon: "House|Home", title: "Today" },
@@ -6139,7 +6369,7 @@ react-dom/cjs/react-dom-client.production.js:
       clearIntent,
       reloadAll
     };
-    const tabs = profile && profile.sex !== "female" ? TABS.map((t) => t.id === "sculpt" ? { ...t, label: "Body", icon: "Ruler", title: "Body" } : t) : TABS;
+    const tabs = profile && profile.sex !== "female" ? TABS.map((t) => t.id === "sculpt" ? { ...t, label: "Body", icon: "Dumbbell", title: "Body" } : t) : TABS;
     const current = tabs.find((t) => t.id === tab) || tabs[0];
     return /* @__PURE__ */ React.createElement(AppCtx.Provider, { value: ctx }, !profile ? /* @__PURE__ */ React.createElement(Onboarding, null) : /* @__PURE__ */ React.createElement("div", { className: "mx-auto min-h-full max-w-md" }, /* @__PURE__ */ React.createElement(Header, { tab: current }), /* @__PURE__ */ React.createElement("main", { className: "px-4 pt-1", style: { paddingBottom: 96 } }, tab === "home" && /* @__PURE__ */ React.createElement(Dashboard, null), tab === "food" && /* @__PURE__ */ React.createElement(FoodLogger, null), tab === "sculpt" && /* @__PURE__ */ React.createElement(SculptHub, null), tab === "stats" && /* @__PURE__ */ React.createElement(Analytics, null), tab === "profile" && /* @__PURE__ */ React.createElement(ProfileScreen, null)), /* @__PURE__ */ React.createElement(BottomNav, { tabs, tab, onChange: (t) => go(t) })), /* @__PURE__ */ React.createElement(Toasts, { items: toasts, onDismiss: dismissToast }), /* @__PURE__ */ React.createElement(ConfirmDialog, { dialog, onClose: closeDialog }));
   }

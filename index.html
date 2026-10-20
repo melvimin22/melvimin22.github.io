@@ -504,6 +504,9 @@ video {
 .z-\[70\] {
   z-index: 70;
 }
+.z-\[90\] {
+  z-index: 90;
+}
 .-mx-4 {
   margin-left: -1rem;
   margin-right: -1rem;
@@ -549,6 +552,9 @@ video {
 }
 .mb-5 {
   margin-bottom: 1.25rem;
+}
+.mb-6 {
+  margin-bottom: 1.5rem;
 }
 .ml-1 {
   margin-left: 0.25rem;
@@ -694,6 +700,9 @@ video {
 .max-h-\[46vh\] {
   max-height: 46vh;
 }
+.min-h-\[48px\] {
+  min-height: 48px;
+}
 .min-h-\[56px\] {
   min-height: 56px;
 }
@@ -732,6 +741,9 @@ video {
 }
 .w-2\.5 {
   width: 0.625rem;
+}
+.w-24 {
+  width: 6rem;
 }
 .w-28 {
   width: 7rem;
@@ -783,6 +795,9 @@ video {
 }
 .flex-1 {
   flex: 1 1 0%;
+}
+.flex-\[2\] {
+  flex: 2;
 }
 .shrink-0 {
   flex-shrink: 0;
@@ -1015,6 +1030,9 @@ video {
 }
 .rounded-\[26px\] {
   border-radius: 26px;
+}
+.rounded-\[28px\] {
+  border-radius: 28px;
 }
 .rounded-full {
   border-radius: 9999px;
@@ -1317,6 +1335,9 @@ video {
 .pb-36 {
   padding-bottom: 9rem;
 }
+.pb-6 {
+  padding-bottom: 1.5rem;
+}
 .pr-1 {
   padding-right: 0.25rem;
 }
@@ -1416,6 +1437,9 @@ video {
 .text-\[44px\] {
   font-size: 44px;
 }
+.text-\[52px\] {
+  font-size: 52px;
+}
 .text-\[84px\] {
   font-size: 84px;
 }
@@ -1446,6 +1470,9 @@ video {
 }
 .leading-none {
   line-height: 1;
+}
+.leading-relaxed {
+  line-height: 1.625;
 }
 .leading-snug {
   line-height: 1.375;
@@ -1631,6 +1658,11 @@ video {
 }
 .transition {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.transition-all {
+  transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -1844,10 +1876,10 @@ react-dom/cjs/react-dom-client.production.js:
   const addMonthsKey = (k, m) => {
     const d = fromKey(k);
     const day = d.getDate();
-    const t = new Date(d.getFullYear(), d.getMonth() + m, 1);
-    const last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
-    t.setDate(Math.min(day, last));
-    return toKey(t);
+    const t2 = new Date(d.getFullYear(), d.getMonth() + m, 1);
+    const last = new Date(t2.getFullYear(), t2.getMonth() + 1, 0).getDate();
+    t2.setDate(Math.min(day, last));
+    return toKey(t2);
   };
   const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const DOW_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -1925,6 +1957,136 @@ react-dom/cjs/react-dom-client.production.js:
       inch = 0;
     }
     return { ft, inch };
+  };
+  const LANGS = [{ id: "en", n: "English" }, { id: "fr", n: "Français" }, { id: "pt", n: "Português" }];
+  const COUNTRIES = [
+    { id: "CM", flag: "🇨🇲", n: { en: "Cameroon", fr: "Cameroun", pt: "Camarões" }, cur: "FCFA", off: "en:cameroon", unit: "metric" },
+    { id: "US", flag: "🇺🇸", n: { en: "USA", fr: "États-Unis", pt: "EUA" }, cur: "$", off: "en:united-states", unit: "imperial" },
+    { id: "CA", flag: "🇨🇦", n: { en: "Canada", fr: "Canada", pt: "Canadá" }, cur: "CA$", off: "en:canada", unit: "metric" },
+    { id: "UK", flag: "🇬🇧", n: { en: "UK", fr: "Royaume-Uni", pt: "Reino Unido" }, cur: "£", off: "en:united-kingdom", unit: "metric" },
+    { id: "BR", flag: "🇧🇷", n: { en: "Brazil", fr: "Brésil", pt: "Brasil" }, cur: "R$", off: "en:brazil", unit: "metric" },
+    { id: "OTHER", flag: "🌍", n: { en: "Other", fr: "Autre", pt: "Outro" }, cur: "$", off: null, unit: "metric" }
+  ];
+  const COUNTRY_INDEX = {};
+  COUNTRIES.forEach((c) => {
+    COUNTRY_INDEX[c.id] = c;
+  });
+  const countryOf = (id) => COUNTRY_INDEX[id] || COUNTRY_INDEX.CM;
+  let CUR_LANG = "en";
+  function detectLang() {
+    const l = (typeof navigator !== "undefined" && navigator.language || "en").toLowerCase();
+    return l.startsWith("fr") ? "fr" : l.startsWith("pt") ? "pt" : "en";
+  }
+  function detectCountry() {
+    const reg = ((typeof navigator !== "undefined" && navigator.language || "").split("-")[1] || "").toUpperCase();
+    return { CM: "CM", US: "US", CA: "CA", GB: "UK", UK: "UK", BR: "BR" }[reg] || "CM";
+  }
+  function t(key, vars) {
+    const s = I18N[CUR_LANG] && I18N[CUR_LANG][key] || I18N.en[key] || key;
+    return vars ? s.replace(/\{(\w+)\}/g, (m, k) => vars[k] != null ? String(vars[k]) : m) : s;
+  }
+  function setLang(l) {
+    CUR_LANG = I18N[l] ? l : "en";
+    try {
+      document.documentElement.lang = CUR_LANG;
+    } catch (e) {
+    }
+  }
+  const countryName = (id) => {
+    const c = countryOf(id);
+    return c.n[CUR_LANG] || c.n.en;
+  };
+  const I18N = {
+    en: {
+      "where.title": "Where do you live?",
+      "where.sub": "Sets your units, your money and which foods come first.",
+      "lang.title": "Language",
+      "lang.note": "The quick tour and these settings are in your language now. The rest of the app follows in the next updates.",
+      "tour.label": "Quick tour",
+      "tour.step": "{n} of {m}",
+      "tour.skip": "Skip",
+      "tour.skipLabel": "Skip tour",
+      "tour.next": "Next",
+      "tour.back": "Back",
+      "tour.go": "Let’s go",
+      "tour.1.t": "Welcome to Sculpt",
+      "tour.1.b": "Sculpt helps you eat right for your goal and train smart. Here’s how it works, in one minute.",
+      "tour.2.t": "What calories are",
+      "tour.2.b": "Calories are the energy in food, like fuel for a car. Your body burns energy all day, even while you sleep. Eat a little less than you burn and your body uses stored fat for the rest. Eat a little more and you have spare energy to build muscle.",
+      "tour.3.t": "Your daily target",
+      "tour.3.b": "From your body and activity, Sculpt works out how much you burn and sets a calorie target for your goal. The Today screen shows how much is left, so you always know where you stand.",
+      "tour.4.t": "Protein, carbs and fat",
+      "tour.4.b": "Protein builds and repairs muscle. Carbs are your main fuel for training. Fat keeps your hormones healthy. Sculpt sets a daily amount of each for your plan.",
+      "tour.5.t": "Logging food",
+      "tour.5.b": "Tap Log food, search what you ate and choose how much. No scale? Count it, like 2 eggs, or use your hand: a palm of meat, a fist of rice. Can’t find something? Search online.",
+      "tour.6.t": "Train, check, improve",
+      "tour.6.b": "{train} has your workouts, with a 3D coach that shows each move. Nutrients shows the vitamins and minerals you’re short on and the foods that help. Progress shows your weight and how your weeks are going.",
+      "cl.title": "Country and language",
+      "cl.tour": "Replay the quick tour",
+      "cl.country": "Country set to {c}",
+      "cl.lang": "Language set to English",
+      "cl.sub": "Money for protein prices: {cur}. Online search shows products from {c} first."
+    },
+    fr: {
+      "where.title": "Où vivez-vous ?",
+      "where.sub": "Définit vos unités, votre monnaie et les aliments proposés en premier.",
+      "lang.title": "Langue",
+      "lang.note": "La visite guidée et ces réglages sont dans votre langue. Le reste de l’application suivra dans les prochaines mises à jour.",
+      "tour.label": "Visite guidée",
+      "tour.step": "{n} sur {m}",
+      "tour.skip": "Passer",
+      "tour.skipLabel": "Passer la visite",
+      "tour.next": "Suivant",
+      "tour.back": "Retour",
+      "tour.go": "C’est parti",
+      "tour.1.t": "Bienvenue sur Sculpt",
+      "tour.1.b": "Sculpt vous aide à bien manger selon votre objectif et à vous entraîner intelligemment. Voici comment ça marche, en une minute.",
+      "tour.2.t": "Les calories, c’est quoi ?",
+      "tour.2.b": "Les calories, c’est l’énergie contenue dans les aliments, comme le carburant d’une voiture. Votre corps brûle de l’énergie toute la journée, même pendant le sommeil. Mangez un peu moins que ce que vous brûlez, et votre corps puise dans ses réserves de graisse pour le reste. Mangez un peu plus, et vous avez de l’énergie en plus pour construire du muscle.",
+      "tour.3.t": "Votre objectif du jour",
+      "tour.3.b": "À partir de votre corps et de votre activité, Sculpt calcule ce que vous brûlez et fixe un objectif de calories adapté à votre but. L’écran Today montre ce qu’il vous reste, pour toujours savoir où vous en êtes.",
+      "tour.4.t": "Protéines, glucides et lipides",
+      "tour.4.b": "Les protéines construisent et réparent les muscles. Les glucides sont le carburant principal de l’entraînement. Les lipides gardent vos hormones en bonne santé. Sculpt fixe une quantité de chacun pour votre plan.",
+      "tour.5.t": "Noter ce que vous mangez",
+      "tour.5.b": "Touchez Log food, cherchez ce que vous avez mangé et choisissez la quantité. Pas de balance ? Comptez, par exemple 2 œufs, ou utilisez votre main : une paume de viande, un poing de riz. Introuvable ? Cherchez en ligne.",
+      "tour.6.t": "S’entraîner, vérifier, progresser",
+      "tour.6.b": "{train} contient vos séances, avec un coach 3D qui montre chaque mouvement. Nutrients montre les vitamines et minéraux qui vous manquent et les aliments qui aident. Progress montre votre poids et le bilan de vos semaines.",
+      "cl.title": "Pays et langue",
+      "cl.tour": "Revoir la visite guidée",
+      "cl.country": "Pays : {c}",
+      "cl.lang": "Langue : français",
+      "cl.sub": "Monnaie pour les prix des protéines : {cur}. La recherche en ligne montre d’abord les produits du pays ({c})."
+    },
+    pt: {
+      "where.title": "Onde você mora?",
+      "where.sub": "Define suas unidades, sua moeda e quais alimentos aparecem primeiro.",
+      "lang.title": "Idioma",
+      "lang.note": "O tour rápido e estas opções já estão no seu idioma. O resto do app virá nas próximas atualizações.",
+      "tour.label": "Tour rápido",
+      "tour.step": "{n} de {m}",
+      "tour.skip": "Pular",
+      "tour.skipLabel": "Pular o tour",
+      "tour.next": "Próximo",
+      "tour.back": "Voltar",
+      "tour.go": "Vamos lá",
+      "tour.1.t": "Bem-vindo ao Sculpt",
+      "tour.1.b": "O Sculpt ajuda você a comer certo para o seu objetivo e a treinar com inteligência. Veja como funciona, em um minuto.",
+      "tour.2.t": "O que são calorias",
+      "tour.2.b": "Calorias são a energia dos alimentos, como o combustível de um carro. Seu corpo gasta energia o dia todo, até dormindo. Coma um pouco menos do que gasta e o corpo usa a gordura guardada para completar. Coma um pouco mais e sobra energia para construir músculo.",
+      "tour.3.t": "Sua meta diária",
+      "tour.3.b": "Com base no seu corpo e na sua atividade, o Sculpt calcula quanto você gasta e define uma meta de calorias para o seu objetivo. A tela Today mostra quanto falta, para você sempre saber onde está.",
+      "tour.4.t": "Proteínas, carboidratos e gorduras",
+      "tour.4.b": "A proteína constrói e repara os músculos. Os carboidratos são o principal combustível do treino. A gordura mantém seus hormônios saudáveis. O Sculpt define uma quantidade diária de cada um para o seu plano.",
+      "tour.5.t": "Registrar o que você come",
+      "tour.5.b": "Toque em Log food, procure o que comeu e escolha a quantidade. Sem balança? Conte, como 2 ovos, ou use a mão: uma palma de carne, um punho de arroz. Não encontrou? Pesquise online.",
+      "tour.6.t": "Treinar, conferir, evoluir",
+      "tour.6.b": "{train} tem seus treinos, com um treinador 3D que mostra cada movimento. Nutrients mostra as vitaminas e minerais que estão faltando e os alimentos que ajudam. Progress mostra seu peso e como estão indo suas semanas.",
+      "cl.title": "País e idioma",
+      "cl.tour": "Rever o tour rápido",
+      "cl.country": "País: {c}",
+      "cl.lang": "Idioma: português",
+      "cl.sub": "Moeda dos preços de proteína: {cur}. A pesquisa online mostra primeiro os produtos de {c}."
+    }
   };
   const KCAL_PER_KG = 7700;
   const GOAL_MONTHS = [1, 2, 3, 4, 6, 8, 12];
@@ -2657,8 +2819,8 @@ react-dom/cjs/react-dom-client.production.js:
   const sumParts = (parts) => parts.reduce((a, x) => ({ kcal: a.kcal + x.r.kcal, p: a.p + x.r.p, c: a.c + x.r.c, f: a.f + x.r.f, grams: a.grams + x.r.grams }), { kcal: 0, p: 0, c: 0, f: 0, grams: 0 });
   const scaleLabel = (s) => s === 1 ? "" : s === 0.5 ? ", half portion" : `, ${s}× portion`;
   const makeMealItem = (meal, scale = 1) => {
-    const t = sumParts(mealParts(meal, scale));
-    return { id: uid(), name: `${meal.n}${scaleLabel(scale)}`, kcal: r1(t.kcal), p: r1(t.p), c: r1(t.c), f: r1(t.f), at: Date.now(), ref: { kind: "meal", id: meal.id, scale } };
+    const t2 = sumParts(mealParts(meal, scale));
+    return { id: uid(), name: `${meal.n}${scaleLabel(scale)}`, kcal: r1(t2.kcal), p: r1(t2.p), c: r1(t2.c), f: r1(t2.f), at: Date.now(), ref: { kind: "meal", id: meal.id, scale } };
   };
   const QUICK = [
     ["egg", { form: "boiled", grams: 100 }, "2 whole eggs"],
@@ -2746,10 +2908,10 @@ react-dom/cjs/react-dom-client.production.js:
     const tokens = norm(query).split(" ").filter(Boolean);
     let hint = null;
     const words = [];
-    tokens.forEach((t) => {
-      if (METHOD_WORDS[t]) {
-        if (!hint) hint = METHOD_WORDS[t];
-      } else words.push(t);
+    tokens.forEach((t2) => {
+      if (METHOD_WORDS[t2]) {
+        if (!hint) hint = METHOD_WORDS[t2];
+      } else words.push(t2);
     });
     return { words, hint };
   }
@@ -2890,10 +3052,11 @@ react-dom/cjs/react-dom-client.production.js:
     { id: "whey", e: "🥤", n: "Whey protein", unit: "per tub", sized: true, p100: 80, foods: ["whey", "whey-isolate"] },
     { id: "plant", e: "🥤", n: "Plant protein powder", unit: "per tub", sized: true, p100: 75, foods: ["plant-protein"] }
   ];
-  function loadPrices() {
+  function loadPrices(country) {
     const v = store.get("prices");
-    if (!v || typeof v !== "object") return { currency: "FCFA", items: {} };
-    const cur = typeof v.currency === "string" && v.currency.trim() ? v.currency.trim().slice(0, 6) : "FCFA";
+    const def = countryOf(country).cur;
+    if (!v || typeof v !== "object") return { currency: def, items: {} };
+    const cur = typeof v.currency === "string" && v.currency.trim() ? v.currency.trim().slice(0, 6) : def;
     return { currency: cur, items: v.items && typeof v.items === "object" ? v.items : {} };
   }
   const savePrices = (v) => store.set("prices", v);
@@ -3026,16 +3189,16 @@ react-dom/cjs/react-dom-client.production.js:
   }
   const onlineSearchAvailable = () => typeof window !== "undefined" && !!window.SCULPT_STANDALONE;
   const USDA_URL = (q) => `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY&pageSize=12&dataType=${encodeURIComponent("Foundation,SR Legacy,Survey (FNDDS)")}&query=${encodeURIComponent(q)}`;
-  const OFF_URL = (q) => `https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=12&fields=code,product_name,brands,nutriments,serving_quantity&search_terms=${encodeURIComponent(q)}`;
+  const OFF_URL = (q) => `https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=12&fields=code,product_name,brands,nutriments,serving_quantity,countries_tags&search_terms=${encodeURIComponent(q)}`;
   const numOrNull = (v) => {
     const n = typeof v === "string" ? parseFloat(v) : v;
     return typeof n === "number" && Number.isFinite(n) ? n : null;
   };
   const saneFood = (k, p, c, f) => k != null && p != null && c != null && f != null && k >= 0 && k <= 950 && p >= 0 && c >= 0 && f >= 0 && p + c + f <= 105;
   function usdaName(s) {
-    const t = String(s || "").trim();
-    if (!t) return "";
-    const x = t === t.toUpperCase() ? t.toLowerCase() : t;
+    const t2 = String(s || "").trim();
+    if (!t2) return "";
+    const x = t2 === t2.toUpperCase() ? t2.toLowerCase() : t2;
     return x.charAt(0).toUpperCase() + x.slice(1);
   }
   function parseUsda(data) {
@@ -3087,7 +3250,7 @@ react-dom/cjs/react-dom-client.production.js:
         const v = numOrNull(n[OFF_MICRO[key][0]]);
         if (v != null) mic[key] = v * OFF_MICRO[key][1];
       });
-      out.push({ id: "off:" + (pr.code || full), src: "Open Food Facts, found online. Check the packet when you can", name: full.slice(0, 80), per100: [k, p, c, f].map(r1), unit: sq > 0 && sq <= 2e3 ? ["1 serving", r1(sq)] : null, mic: keepMicros(mic) });
+      out.push({ countries: Array.isArray(pr.countries_tags) ? pr.countries_tags : [], id: "off:" + (pr.code || full), src: "Open Food Facts, found online. Check the packet when you can", name: full.slice(0, 80), per100: [k, p, c, f].map(r1), unit: sq > 0 && sq <= 2e3 ? ["1 serving", r1(sq)] : null, mic: keepMicros(mic) });
     });
     return out;
   }
@@ -3111,11 +3274,12 @@ react-dom/cjs/react-dom-client.production.js:
       clearTimeout(timer);
     }
   }
-  async function searchOnline(q) {
+  async function searchOnline(q, country) {
     const [u, o] = await Promise.allSettled([fetchJsonTimeout(USDA_URL(q), 1e4), fetchJsonTimeout(OFF_URL(q), 12e3)]);
     return {
       usda: u.status === "fulfilled" ? parseUsda(u.value).slice(0, 8) : null,
-      off: o.status === "fulfilled" ? parseOff(o.value).slice(0, 8) : null
+      // Products sold in your country first.
+      off: o.status === "fulfilled" ? parseOff(o.value).map((x, i) => ({ x, i, home: countryOf(country).off && x.countries.includes(countryOf(country).off) ? 0 : 1 })).sort((a, b) => a.home - b.home || a.i - b.i).map((y) => y.x).slice(0, 8) : null
     };
   }
   const MICRO_KEYS = ["fib", "va", "vc", "vd", "b12", "fol", "ca", "fe", "mg", "k", "zn", "na"];
@@ -3800,10 +3964,10 @@ react-dom/cjs/react-dom-client.production.js:
     return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-50 flex items-end justify-center", role: "dialog", "aria-modal": "true", "aria-label": title }, /* @__PURE__ */ React.createElement("div", { className: "fade-in absolute inset-0 bg-black/55", onClick: onClose }), /* @__PURE__ */ React.createElement("div", { className: "sheet-in sheet-max relative flex w-full max-w-md flex-col rounded-t-[28px] bg-surface shadow-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "relative flex items-center gap-2 px-5 pb-2 pt-5" }, /* @__PURE__ */ React.createElement("span", { className: "absolute left-1/2 top-2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-line", "aria-hidden": "true" }), onBack && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onBack, "aria-label": "Back", className: "press -ml-1 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-raised" }, /* @__PURE__ */ React.createElement(Icon, { name: "ChevronLeft", size: 20 })), /* @__PURE__ */ React.createElement("h3", { className: "min-w-0 flex-1 truncate font-display text-[18px] font-semibold tracking-tight" }, title), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": "Close", className: "press grid h-10 w-10 shrink-0 place-items-center rounded-full bg-raised text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "X", size: 18 }))), /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto overscroll-contain px-5 pt-1", style: { paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" } }, children)));
   }
   function Toasts({ items, onDismiss }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none fixed inset-x-0 z-[70] flex flex-col items-center gap-2 px-4", style: { top: "calc(env(safe-area-inset-top, 0px) + 10px)" }, role: "status", "aria-live": "polite" }, items.map((t) => /* @__PURE__ */ React.createElement("div", { key: t.id, className: "toast-in pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl bg-[#2B2033] px-4 py-3 text-[14px] font-medium text-white shadow-xl ring-1 ring-white/10" }, /* @__PURE__ */ React.createElement("span", { className: t.tone === "warn" ? "text-[#FF9AAD]" : t.tone === "pb" ? "text-[#FFC85C]" : "text-[#5EE6B0]" }, /* @__PURE__ */ React.createElement(Icon, { name: t.tone === "warn" ? "CircleAlert|AlertCircle" : t.tone === "pb" ? "Trophy" : "CircleCheck|CheckCircle2|CheckCircle", size: 18 })), /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, t.msg), t.action && /* @__PURE__ */ React.createElement("button", { type: "button", className: "-my-1 rounded-lg px-2.5 py-1.5 font-bold text-[#FFB4A8]", onClick: () => {
-      t.action.onClick();
-      onDismiss(t.id);
-    } }, t.action.label))));
+    return /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none fixed inset-x-0 z-[70] flex flex-col items-center gap-2 px-4", style: { top: "calc(env(safe-area-inset-top, 0px) + 10px)" }, role: "status", "aria-live": "polite" }, items.map((t2) => /* @__PURE__ */ React.createElement("div", { key: t2.id, className: "toast-in pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl bg-[#2B2033] px-4 py-3 text-[14px] font-medium text-white shadow-xl ring-1 ring-white/10" }, /* @__PURE__ */ React.createElement("span", { className: t2.tone === "warn" ? "text-[#FF9AAD]" : t2.tone === "pb" ? "text-[#FFC85C]" : "text-[#5EE6B0]" }, /* @__PURE__ */ React.createElement(Icon, { name: t2.tone === "warn" ? "CircleAlert|AlertCircle" : t2.tone === "pb" ? "Trophy" : "CircleCheck|CheckCircle2|CheckCircle", size: 18 })), /* @__PURE__ */ React.createElement("span", { className: "flex-1 leading-snug" }, t2.msg), t2.action && /* @__PURE__ */ React.createElement("button", { type: "button", className: "-my-1 rounded-lg px-2.5 py-1.5 font-bold text-[#FFB4A8]", onClick: () => {
+      t2.action.onClick();
+      onDismiss(t2.id);
+    } }, t2.action.label))));
   }
   function ConfirmDialog({ dialog, onClose }) {
     useEffect(() => {
@@ -3855,28 +4019,28 @@ react-dom/cjs/react-dom-client.production.js:
       if (!(dx[i] > 0)) return linePath(pts);
       m[i] = (pts[i + 1][1] - pts[i][1]) / dx[i];
     }
-    const t = [m[0]];
-    for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
-    t[n - 1] = m[n - 2];
+    const t2 = [m[0]];
+    for (let i = 1; i < n - 1; i++) t2[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
+    t2[n - 1] = m[n - 2];
     for (let i = 0; i < n - 1; i++) {
       if (m[i] === 0) {
-        t[i] = 0;
-        t[i + 1] = 0;
+        t2[i] = 0;
+        t2[i + 1] = 0;
         continue;
       }
-      const ra = t[i] / m[i];
-      const rb = t[i + 1] / m[i];
+      const ra = t2[i] / m[i];
+      const rb = t2[i + 1] / m[i];
       const sq = ra * ra + rb * rb;
       if (sq > 9) {
         const k = 3 / Math.sqrt(sq);
-        t[i] = k * ra * m[i];
-        t[i + 1] = k * rb * m[i];
+        t2[i] = k * ra * m[i];
+        t2[i + 1] = k * rb * m[i];
       }
     }
     let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
     for (let i = 0; i < n - 1; i++) {
       const h = dx[i] / 3;
-      d += ` C${(pts[i][0] + h).toFixed(1)},${(pts[i][1] + t[i] * h).toFixed(1)} ${(pts[i + 1][0] - h).toFixed(1)},${(pts[i + 1][1] - t[i + 1] * h).toFixed(1)} ${pts[i + 1][0].toFixed(1)},${pts[i + 1][1].toFixed(1)}`;
+      d += ` C${(pts[i][0] + h).toFixed(1)},${(pts[i][1] + t2[i] * h).toFixed(1)} ${(pts[i + 1][0] - h).toFixed(1)},${(pts[i + 1][1] - t2[i + 1] * h).toFixed(1)} ${pts[i + 1][0].toFixed(1)},${pts[i + 1][1].toFixed(1)}`;
     }
     return d;
   }
@@ -4073,7 +4237,7 @@ react-dom/cjs/react-dom-client.production.js:
       const l = Math.hypot(a[0], a[1], a[2]) || 1;
       return [a[0] / l, a[1] / l, a[2] / l];
     },
-    lerp: (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
+    lerp: (a, b, t2) => [a[0] + (b[0] - a[0]) * t2, a[1] + (b[1] - a[1]) * t2, a[2] + (b[2] - a[2]) * t2]
   };
   const M4 = {
     mul(a, b) {
@@ -4099,11 +4263,11 @@ react-dom/cjs/react-dom-client.production.js:
     dir: (m, x, y, z) => V3.norm([m[0] * x + m[4] * y + m[8] * z, m[1] * x + m[5] * y + m[9] * z, m[2] * x + m[6] * y + m[10] * z]),
     basis: (x, y, z, p) => [x[0], x[1], x[2], 0, y[0], y[1], y[2], 0, z[0], z[1], z[2], 0, p[0], p[1], p[2], 1],
     persp(fov, asp, n, f) {
-      const t = 1 / Math.tan(fov * Math.PI / 360);
-      return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (f + n) / (n - f), -1, 0, 0, 2 * f * n / (n - f), 0];
+      const t2 = 1 / Math.tan(fov * Math.PI / 360);
+      return [t2 / asp, 0, 0, 0, 0, t2, 0, 0, 0, 0, (f + n) / (n - f), -1, 0, 0, 2 * f * n / (n - f), 0];
     },
-    look(e, t, u) {
-      const z = V3.norm(V3.sub(e, t));
+    look(e, t2, u) {
+      const z = V3.norm(V3.sub(e, t2));
       const x = V3.norm(V3.cross(u, z));
       const y = V3.cross(z, x);
       return [x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0, -V3.dot(x, e), -V3.dot(y, e), -V3.dot(z, e), 1];
@@ -4277,7 +4441,7 @@ react-dom/cjs/react-dom-client.production.js:
     p = V3.norm(p);
     return { E: V3.add(V3.add(A, V3.mul(dir, a)), V3.mul(p, h)), T };
   }
-  function mixPose(a0, b0, t) {
+  function mixPose(a0, b0, t2) {
     const a = { ...MQ_POSE0, ...a0 };
     const b = { ...MQ_POSE0, ...b0 };
     const o = {};
@@ -4285,10 +4449,10 @@ react-dom/cjs/react-dom-client.production.js:
     keys.forEach((k) => {
       const x = a[k];
       const y = b[k];
-      if (typeof x === "number" && typeof y === "number") o[k] = x + (y - x) * t;
-      else if (Array.isArray(x) && Array.isArray(y) && x.length === y.length) o[k] = x.map((v, i) => v + (y[i] - v) * t);
-      else if (x && y && typeof x === "object" && x.f && x.f === y.f) o[k] = { f: x.f, p: x.p.map((v, i) => v + (y.p[i] - v) * t) };
-      else o[k] = t < 0.5 ? x === void 0 ? y : x : y === void 0 ? x : y;
+      if (typeof x === "number" && typeof y === "number") o[k] = x + (y - x) * t2;
+      else if (Array.isArray(x) && Array.isArray(y) && x.length === y.length) o[k] = x.map((v, i) => v + (y[i] - v) * t2);
+      else if (x && y && typeof x === "object" && x.f && x.f === y.f) o[k] = { f: x.f, p: x.p.map((v, i) => v + (y.p[i] - v) * t2) };
+      else o[k] = t2 < 0.5 ? x === void 0 ? y : x : y === void 0 ? x : y;
     });
     return o;
   }
@@ -4548,8 +4712,8 @@ react-dom/cjs/react-dom-client.production.js:
   };
   const MQ_NAMES = { quads: "Quads", glutes: "Glutes", gluteMed: "Side glutes", hamstrings: "Hamstrings", chest: "Chest", delts: "Shoulders", triceps: "Triceps", biceps: "Biceps", lats: "Lats", upperBack: "Upper back", lowerBack: "Lower back", abs: "Abs", obliques: "Obliques", calves: "Calves" };
   const mqAnimKey = (slotId, equip) => MQ_FOR[slotId] && (MQ_FOR[slotId][equip] || null) || null;
-  function parseTempo(t) {
-    const m = String(t || "").match(/(\d)\s*-\s*(\d)\s*-\s*(\d)\s*-\s*(\d)/);
+  function parseTempo(t2) {
+    const m = String(t2 || "").match(/(\d)\s*-\s*(\d)\s*-\s*(\d)\s*-\s*(\d)/);
     const d = m ? m.slice(1, 5).map(Number) : [2, 0, 1, 0];
     return [Math.max(0.7, d[0]), d[1], Math.max(0.6, d[2]), d[3]];
   }
@@ -4591,11 +4755,13 @@ react-dom/cjs/react-dom-client.production.js:
     const c = MQ_ANIMS[key] && MQ_ANIMS[key].cam || CAM_SIDE;
     const yaw = (c.yaw + yawOff) * Math.PI / 180;
     const pitch = Math.max(-5, Math.min(60, c.pitch + pitchOff)) * Math.PI / 180;
-    const t = [0, c.ty, 0];
-    return { eye: [t[0] + c.dist * Math.cos(pitch) * Math.sin(yaw), t[1] + c.dist * Math.sin(pitch), t[2] + c.dist * Math.cos(pitch) * Math.cos(yaw)], target: t };
+    const t2 = [0, c.ty, 0];
+    return { eye: [t2[0] + c.dist * Math.cos(pitch) * Math.sin(yaw), t2[1] + c.dist * Math.sin(pitch), t2[2] + c.dist * Math.cos(pitch) * Math.cos(yaw)], target: t2 };
   }
   const emptyForm = () => ({
-    unit: "metric",
+    country: detectCountry(),
+    lang: detectLang(),
+    unit: countryOf(detectCountry()).unit,
     name: "",
     weight: "",
     heightCm: "",
@@ -4617,6 +4783,8 @@ react-dom/cjs/react-dom-client.production.js:
     if (!p) return emptyForm();
     const { ft, inch } = cmToFtIn(p.heightCm);
     return {
+      country: p.country || "CM",
+      lang: p.lang || "en",
       unit: p.unit || "metric",
       name: p.name || "",
       weight: t1(wOut(p.weightKg, p.unit)),
@@ -4692,6 +4860,8 @@ react-dom/cjs/react-dom-client.production.js:
   function draftProfile(form) {
     const v = bodyValues(form);
     return {
+      country: form.country || "CM",
+      lang: form.lang || "en",
       unit: form.unit,
       name: form.name.trim().slice(0, 30),
       weightKg: v.weightKg,
@@ -4733,7 +4903,7 @@ react-dom/cjs/react-dom-client.production.js:
     const set = (k) => (v2) => setForm((f) => ({ ...f, [k]: v2 }));
     const imp = isImp(form.unit);
     const v = bodyValues(form);
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Units"), /* @__PURE__ */ React.createElement(Segmented, { label: "Units", options: [{ value: "metric", label: "Metric (kg, cm)" }, { value: "imperial", label: "Imperial (lb, ft)" }], value: form.unit, onChange: (u) => setForm((f) => convertForm(f, u)) })), /* @__PURE__ */ React.createElement(Field, { label: "Name (optional)", value: form.name, onChange: set("name"), inputMode: "text", placeholder: "What should the app call you?", maxLength: 30 }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Weight", suffix: wUnit(form.unit), value: form.weight, onChange: set("weight"), error: errors.weight, placeholder: imp ? "150" : "68" }), /* @__PURE__ */ React.createElement(Field, { label: "Age", suffix: "yrs", value: form.age, onChange: set("age"), error: errors.age, inputMode: "numeric", placeholder: "30" })), imp ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Height"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(Field, { suffix: "ft", value: form.ft, onChange: set("ft"), inputMode: "numeric", placeholder: "5", "aria-label": "Height, feet", error: errors.height ? " " : void 0 }), /* @__PURE__ */ React.createElement(Field, { suffix: "in", value: form.inch, onChange: set("inch"), inputMode: "decimal", placeholder: "6", "aria-label": "Height, inches", error: errors.height ? " " : void 0 })), errors.height && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[12px] font-medium text-danger" }, errors.height)) : /* @__PURE__ */ React.createElement(Field, { label: "Height", suffix: "cm", value: form.heightCm, onChange: set("heightCm"), error: errors.height, placeholder: "168" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Biological sex"), /* @__PURE__ */ React.createElement(Segmented, { label: "Biological sex", options: [{ value: "female", label: "Female" }, { value: "male", label: "Male" }], value: form.sex, onChange: (v2) => setForm((f) => ({ ...f, sex: v2, program: v2 !== "female" && f.program === "sculpt" ? "" : f.program })) }), errors.sex ? /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[12px] font-medium text-danger" }, errors.sex) : /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] text-muted" }, "Used only in the BMR formula.")), v.weightKg >= 30 && v.heightCm >= 120 && v.heightCm <= 230 && /* @__PURE__ */ React.createElement(BmiCard, { kg: v.weightKg, cm: v.heightCm, unit: form.unit }));
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement(CountryLangFields, { form, setForm }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Units"), /* @__PURE__ */ React.createElement(Segmented, { label: "Units", options: [{ value: "metric", label: "Metric (kg, cm)" }, { value: "imperial", label: "Imperial (lb, ft)" }], value: form.unit, onChange: (u) => setForm((f) => convertForm(f, u)) })), /* @__PURE__ */ React.createElement(Field, { label: "Name (optional)", value: form.name, onChange: set("name"), inputMode: "text", placeholder: "What should the app call you?", maxLength: 30 }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Weight", suffix: wUnit(form.unit), value: form.weight, onChange: set("weight"), error: errors.weight, placeholder: imp ? "150" : "68" }), /* @__PURE__ */ React.createElement(Field, { label: "Age", suffix: "yrs", value: form.age, onChange: set("age"), error: errors.age, inputMode: "numeric", placeholder: "30" })), imp ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Height"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(Field, { suffix: "ft", value: form.ft, onChange: set("ft"), inputMode: "numeric", placeholder: "5", "aria-label": "Height, feet", error: errors.height ? " " : void 0 }), /* @__PURE__ */ React.createElement(Field, { suffix: "in", value: form.inch, onChange: set("inch"), inputMode: "decimal", placeholder: "6", "aria-label": "Height, inches", error: errors.height ? " " : void 0 })), errors.height && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[12px] font-medium text-danger" }, errors.height)) : /* @__PURE__ */ React.createElement(Field, { label: "Height", suffix: "cm", value: form.heightCm, onChange: set("heightCm"), error: errors.height, placeholder: "168" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Biological sex"), /* @__PURE__ */ React.createElement(Segmented, { label: "Biological sex", options: [{ value: "female", label: "Female" }, { value: "male", label: "Male" }], value: form.sex, onChange: (v2) => setForm((f) => ({ ...f, sex: v2, program: v2 !== "female" && f.program === "sculpt" ? "" : f.program })) }), errors.sex ? /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[12px] font-medium text-danger" }, errors.sex) : /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] text-muted" }, "Used only in the BMR formula.")), v.weightKg >= 30 && v.heightCm >= 120 && v.heightCm <= 230 && /* @__PURE__ */ React.createElement(BmiCard, { kg: v.weightKg, cm: v.heightCm, unit: form.unit }));
   }
   function OptionCard({ selected, onClick, title, desc, lead, extra }) {
     return /* @__PURE__ */ React.createElement("button", { type: "button", onClick, "aria-pressed": selected, className: `press flex w-full items-center gap-3 rounded-2xl border-2 p-3.5 text-left transition-colors ${selected ? "border-accent bg-accent/10" : "border-transparent bg-raised"}` }, lead && /* @__PURE__ */ React.createElement("span", { className: "grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface text-[22px]", "aria-hidden": "true" }, lead), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[15px] font-semibold leading-snug" }, title), desc && /* @__PURE__ */ React.createElement("span", { className: "mt-0.5 block text-[13px] leading-snug text-muted" }, desc), extra && /* @__PURE__ */ React.createElement("span", { className: "mt-1.5 block text-[12px] font-medium leading-snug text-muted" }, extra)), /* @__PURE__ */ React.createElement("span", { className: `grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-accent bg-accent text-onaccent" : "border-line"}`, "aria-hidden": "true" }, selected && /* @__PURE__ */ React.createElement(Icon, { name: "Check", size: 14, stroke: 3 })));
@@ -4812,7 +4982,7 @@ react-dom/cjs/react-dom-client.production.js:
         if (Object.keys(e).length) return;
       }
       if (step === 4) {
-        saveProfile({ ...profileFromForm(form, null, today), createdAt: today });
+        saveProfile({ ...profileFromForm(form, null, today), createdAt: today, tourDone: false });
         toast("Plan saved. Day one starts now.");
         return;
       }
@@ -5051,7 +5221,7 @@ react-dom/cjs/react-dom-client.production.js:
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement(Panel, { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent/15 text-[28px]", "aria-hidden": "true" }, prog.emoji), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "truncate font-display text-[18px] font-semibold" }, profile.name || "Your profile"), /* @__PURE__ */ React.createElement("p", { className: "text-[13px] leading-snug text-muted" }, prog.name)), !editing && /* @__PURE__ */ React.createElement(Btn, { size: "sm", variant: "soft", onClick: startEdit }, /* @__PURE__ */ React.createElement(Icon, { name: "Pencil", size: 16 }), "Edit")), editing ? /* @__PURE__ */ React.createElement(Panel, { className: "space-y-6" }, /* @__PURE__ */ React.createElement(BodyFields, { form, setForm, errors }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[13px] font-medium text-muted" }, "Activity level"), /* @__PURE__ */ React.createElement(ActivityPicker, { value: form.activity, onChange: (v) => setForm((f) => ({ ...f, activity: v })) })), /* @__PURE__ */ React.createElement(TrainingFields, { form, setForm }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[13px] font-medium text-muted" }, "Program"), /* @__PURE__ */ React.createElement(ProgramPicker, { sex: form.sex, value: form.program, onChange: (v) => setForm((f) => ({ ...f, program: v })) })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[13px] font-medium text-muted" }, "Goal"), /* @__PURE__ */ React.createElement(GoalFields, { form, setForm, errors })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(Btn, { variant: "soft", onClick: () => {
       setEditing(false);
       setErrors({});
-    } }, "Cancel"), /* @__PURE__ */ React.createElement(Btn, { onClick: save }, "Save changes"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(GoalCard, { onEdit: () => setGoalOpen(true) }), /* @__PURE__ */ React.createElement(ProteinLevelPanel, null), /* @__PURE__ */ React.createElement(BmiCard, { kg: profile.weightKg, cm: profile.heightCm, unit: profile.unit }), /* @__PURE__ */ React.createElement(Panel, { className: "py-1.5" }, /* @__PURE__ */ React.createElement(StatsList, { profile })), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "How your targets are set" }), /* @__PURE__ */ React.createElement(PlanSummary, { profile, plan, onLonger: () => setGoalOpen(true) })), /* @__PURE__ */ React.createElement(AdaptiveCard, null)), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Settings" }), /* @__PURE__ */ React.createElement(Panel, { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Appearance"), /* @__PURE__ */ React.createElement(Segmented, { label: "Appearance", options: [{ value: "dark", label: "Dark" }, { value: "light", label: "Light" }], value: theme, onChange: setTheme })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Units"), /* @__PURE__ */ React.createElement(
+    } }, "Cancel"), /* @__PURE__ */ React.createElement(Btn, { onClick: save }, "Save changes"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(GoalCard, { onEdit: () => setGoalOpen(true) }), /* @__PURE__ */ React.createElement(ProteinLevelPanel, null), /* @__PURE__ */ React.createElement(Panel, { "aria-label": t("cl.title") }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, countryOf(profile.country).flag, " ", t("cl.title"), ": ", countryName(profile.country), " · ", (LANGS.find((l) => l.id === (profile.lang || "en")) || LANGS[0]).n), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, t("cl.sub", { cur: countryOf(profile.country).cur, c: countryName(profile.country) })), /* @__PURE__ */ React.createElement(Btn, { variant: "soft", size: "sm", className: "mt-3 w-full", onClick: () => window.dispatchEvent(new Event("sculpt-tour")) }, /* @__PURE__ */ React.createElement(Icon, { name: "Play", size: 16 }), t("cl.tour"))), /* @__PURE__ */ React.createElement(BmiCard, { kg: profile.weightKg, cm: profile.heightCm, unit: profile.unit }), /* @__PURE__ */ React.createElement(Panel, { className: "py-1.5" }, /* @__PURE__ */ React.createElement(StatsList, { profile })), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "How your targets are set" }), /* @__PURE__ */ React.createElement(PlanSummary, { profile, plan, onLonger: () => setGoalOpen(true) })), /* @__PURE__ */ React.createElement(AdaptiveCard, null)), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Settings" }), /* @__PURE__ */ React.createElement(Panel, { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Appearance"), /* @__PURE__ */ React.createElement(Segmented, { label: "Appearance", options: [{ value: "dark", label: "Dark" }, { value: "light", label: "Light" }], value: theme, onChange: setTheme })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Units"), /* @__PURE__ */ React.createElement(
       Segmented,
       {
         label: "Units",
@@ -5065,6 +5235,41 @@ react-dom/cjs/react-dom-client.production.js:
         }
       }
     )))), /* @__PURE__ */ React.createElement(BackupPanel, null), /* @__PURE__ */ React.createElement(GoalSheet, { open: goalOpen, onClose: () => setGoalOpen(false) }));
+  }
+  const TOUR = [["👋", "tour.1"], ["🔥", "tour.2"], ["🎯", "tour.3"], ["🥩", "tour.4"], ["🍽️", "tour.5"], ["💪", "tour.6"]];
+  function QuickTour({ onDone }) {
+    const { profile } = useApp();
+    const [i, setI] = useState(0);
+    const last = i === TOUR.length - 1;
+    const train = profile && profile.sex === "female" ? "Sculpt" : "Body";
+    return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[90] flex flex-col bg-bg", role: "dialog", "aria-modal": "true", "aria-label": t("tour.label"), style: { paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" } }, /* @__PURE__ */ React.createElement("div", { className: "mx-auto flex w-full max-w-md items-center justify-between px-5 pt-4" }, /* @__PURE__ */ React.createElement("span", { className: "text-[13px] font-medium tabular-nums text-muted" }, t("tour.step", { n: i + 1, m: TOUR.length })), !last && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onDone, "aria-label": t("tour.skipLabel"), className: "press rounded-full bg-raised px-4 py-2 text-[14px] font-semibold" }, t("tour.skip"))), /* @__PURE__ */ React.createElement("div", { className: "mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6" }, /* @__PURE__ */ React.createElement("div", { className: "mb-6 grid h-24 w-24 place-items-center rounded-[28px] bg-raised text-[52px]", "aria-hidden": "true" }, TOUR[i][0]), /* @__PURE__ */ React.createElement("h2", { className: "font-display text-[28px] font-bold leading-tight tracking-tight" }, t(TOUR[i][1] + ".t")), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[17px] leading-relaxed text-muted" }, t(TOUR[i][1] + ".b", { train }))), /* @__PURE__ */ React.createElement("div", { className: "mx-auto w-full max-w-md px-6 pb-6" }, /* @__PURE__ */ React.createElement("div", { className: "mb-5 flex justify-center gap-2", "aria-hidden": "true" }, TOUR.map((x, k) => /* @__PURE__ */ React.createElement("span", { key: x[1], className: `h-2 rounded-full transition-all ${k === i ? "w-6 bg-accent" : "w-2 bg-line"}` }))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, i > 0 && /* @__PURE__ */ React.createElement(Btn, { variant: "soft", className: "flex-1", onClick: () => setI(i - 1) }, t("tour.back")), /* @__PURE__ */ React.createElement(Btn, { className: "flex-[2]", onClick: () => last ? onDone() : setI(i + 1) }, last ? t("tour.go") : t("tour.next")))));
+  }
+  function CountryLangFields({ form, setForm }) {
+    const pickCountry = (id) => setForm((f) => {
+      const c = countryOf(id);
+      const g = { ...f, country: id };
+      return c.unit !== f.unit && (id === "US" || f.country === "US") ? convertForm(g, c.unit) : g;
+    });
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, t("where.title")), /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[12px] leading-snug text-muted" }, t("where.sub")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2", role: "radiogroup", "aria-label": t("where.title") }, COUNTRIES.map((c) => {
+      const on = (form.country || "CM") === c.id;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: c.id,
+          type: "button",
+          role: "radio",
+          "aria-checked": on,
+          "aria-label": c.n.en,
+          onClick: () => pickCountry(c.id),
+          className: `press flex min-h-[48px] items-center gap-2 rounded-2xl px-3 text-left text-[14px] font-semibold ${on ? "bg-accent text-onaccent" : "bg-raised"}`
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "text-[18px]", "aria-hidden": "true" }, c.flag),
+        /* @__PURE__ */ React.createElement("span", { className: "truncate" }, c.n[CUR_LANG] || c.n.en)
+      );
+    }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, t("lang.title")), /* @__PURE__ */ React.createElement(Segmented, { label: t("lang.title"), options: LANGS.map((l) => ({ value: l.id, label: l.n })), value: form.lang || "en", onChange: (l) => {
+      setLang(l);
+      setForm((f) => ({ ...f, lang: l }));
+    } }), (form.lang || "en") !== "en" && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug text-muted" }, t("lang.note"))));
   }
   let heroPlayed = false;
   function MacroMini({ label, eaten, target, color }) {
@@ -5118,9 +5323,9 @@ react-dom/cjs/react-dom-client.production.js:
     const [ideasOpen, setIdeasOpen] = useState(false);
     const day = getDay(today);
     const sculpt = profile.program === "sculpt";
-    const t = targetsOn(today);
+    const t2 = targetsOn(today);
     const eaten = sumFoods(day.foods);
-    const left = t.kcal - eaten.kcal;
+    const left = t2.kcal - eaten.kcal;
     const [poured, setPoured] = useState(heroPlayed);
     useEffect(() => {
       if (poured) return void 0;
@@ -5131,7 +5336,7 @@ react-dom/cjs/react-dom-client.production.js:
       return () => clearTimeout(id);
     }, []);
     const streak = useMemo(() => loggingStreak(today), [today, day.foods.length]);
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("section", { className: "flex items-center gap-5 px-1 pt-1", "aria-label": "Calories today" }, /* @__PURE__ */ React.createElement(SandGlass, { eaten: poured ? eaten.kcal : 0, target: t.kcal, height: 176 }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, left >= 0 ? "Calories left" : "Over your target"), /* @__PURE__ */ React.createElement("p", { className: `font-display text-[44px] font-bold leading-[1.02] tracking-tight tabular-nums ${left < 0 ? "text-danger" : ""}` }, thousands(Math.abs(left))), /* @__PURE__ */ React.createElement("dl", { className: "mt-3 space-y-1 text-[14px]" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("dt", { className: "text-muted" }, "Eaten"), /* @__PURE__ */ React.createElement("dd", { className: "font-semibold tabular-nums" }, thousands(eaten.kcal))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("dt", { className: "text-muted" }, "Target"), /* @__PURE__ */ React.createElement("dd", { className: "font-semibold tabular-nums" }, thousands(t.kcal)))), sculpt && /* @__PURE__ */ React.createElement("p", { className: "mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-[13px] font-semibold text-accentink" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, DAY_TYPES[t.dayType].emoji), DAY_TYPES[t.dayType].name))), /* @__PURE__ */ React.createElement(CheckinCard, { onOpen: () => setCheckOpen(true) }), /* @__PURE__ */ React.createElement(EnergyCard, null), /* @__PURE__ */ React.createElement(ActivityPanel, null), /* @__PURE__ */ React.createElement(Panel, { className: "grid grid-cols-3 gap-4", "aria-label": "Macros today" }, /* @__PURE__ */ React.createElement(MacroMini, { label: "Protein", eaten: eaten.p, target: t.protein, color: "--protein" }), /* @__PURE__ */ React.createElement(MacroMini, { label: "Carbs", eaten: eaten.c, target: t.carbs, color: "--carbs" }), /* @__PURE__ */ React.createElement(MacroMini, { label: "Fats", eaten: eaten.f, target: t.fat, color: "--fat" })), /* @__PURE__ */ React.createElement(ProteinTopUpCard, null), sculpt && /* @__PURE__ */ React.createElement(DayTypeSwitch, { dateK: today, compact: true }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(WaterTile, null), profile.sex === "female" ? /* @__PURE__ */ React.createElement(TrainingTile, null) : /* @__PURE__ */ React.createElement(BodyTile, null)), /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", onClick: () => go("food", "add") }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 20 }), "Log food"), /* @__PURE__ */ React.createElement(Btn, { size: "lg", variant: "soft", className: "w-full", onClick: () => setIdeasOpen(true) }, /* @__PURE__ */ React.createElement(Icon, { name: "Sparkles", size: 20 }), "What should I eat?"), streak > 1 && /* @__PURE__ */ React.createElement("p", { className: "text-center text-[13px] text-muted" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🔥 "), streak, "-day logging streak"), /* @__PURE__ */ React.createElement(CheckinSheet, { open: checkOpen, onClose: () => setCheckOpen(false) }), /* @__PURE__ */ React.createElement(MealIdeasSheet, { open: ideasOpen, onClose: () => setIdeasOpen(false) }));
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("section", { className: "flex items-center gap-5 px-1 pt-1", "aria-label": "Calories today" }, /* @__PURE__ */ React.createElement(SandGlass, { eaten: poured ? eaten.kcal : 0, target: t2.kcal, height: 176 }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, left >= 0 ? "Calories left" : "Over your target"), /* @__PURE__ */ React.createElement("p", { className: `font-display text-[44px] font-bold leading-[1.02] tracking-tight tabular-nums ${left < 0 ? "text-danger" : ""}` }, thousands(Math.abs(left))), /* @__PURE__ */ React.createElement("dl", { className: "mt-3 space-y-1 text-[14px]" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("dt", { className: "text-muted" }, "Eaten"), /* @__PURE__ */ React.createElement("dd", { className: "font-semibold tabular-nums" }, thousands(eaten.kcal))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("dt", { className: "text-muted" }, "Target"), /* @__PURE__ */ React.createElement("dd", { className: "font-semibold tabular-nums" }, thousands(t2.kcal)))), sculpt && /* @__PURE__ */ React.createElement("p", { className: "mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-[13px] font-semibold text-accentink" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, DAY_TYPES[t2.dayType].emoji), DAY_TYPES[t2.dayType].name))), /* @__PURE__ */ React.createElement(CheckinCard, { onOpen: () => setCheckOpen(true) }), /* @__PURE__ */ React.createElement(EnergyCard, null), /* @__PURE__ */ React.createElement(ActivityPanel, null), /* @__PURE__ */ React.createElement(Panel, { className: "grid grid-cols-3 gap-4", "aria-label": "Macros today" }, /* @__PURE__ */ React.createElement(MacroMini, { label: "Protein", eaten: eaten.p, target: t2.protein, color: "--protein" }), /* @__PURE__ */ React.createElement(MacroMini, { label: "Carbs", eaten: eaten.c, target: t2.carbs, color: "--carbs" }), /* @__PURE__ */ React.createElement(MacroMini, { label: "Fats", eaten: eaten.f, target: t2.fat, color: "--fat" })), /* @__PURE__ */ React.createElement(ProteinTopUpCard, null), sculpt && /* @__PURE__ */ React.createElement(DayTypeSwitch, { dateK: today, compact: true }), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(WaterTile, null), profile.sex === "female" ? /* @__PURE__ */ React.createElement(TrainingTile, null) : /* @__PURE__ */ React.createElement(BodyTile, null)), /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", onClick: () => go("food", "add") }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 20 }), "Log food"), /* @__PURE__ */ React.createElement(Btn, { size: "lg", variant: "soft", className: "w-full", onClick: () => setIdeasOpen(true) }, /* @__PURE__ */ React.createElement(Icon, { name: "Sparkles", size: 20 }), "What should I eat?"), streak > 1 && /* @__PURE__ */ React.createElement("p", { className: "text-center text-[13px] text-muted" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🔥 "), streak, "-day logging streak"), /* @__PURE__ */ React.createElement(CheckinSheet, { open: checkOpen, onClose: () => setCheckOpen(false) }), /* @__PURE__ */ React.createElement(MealIdeasSheet, { open: ideasOpen, onClose: () => setIdeasOpen(false) }));
   }
   function BodyTile() {
     const { today, getDay, go } = useApp();
@@ -5146,8 +5351,8 @@ react-dom/cjs/react-dom-client.production.js:
     const foodW = Math.min(eat, burn) / max * 100;
     return /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex h-3 overflow-hidden rounded-full bg-raised", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("span", { className: "h-full", style: { width: `${foodW}%`, background: "rgb(var(--accent))" } }), /* @__PURE__ */ React.createElement("span", { className: "h-full flex-1", style: { background: gap >= 0 ? "repeating-linear-gradient(45deg, rgb(var(--carbs) / .8) 0 5px, rgb(var(--carbs) / .35) 5px 10px)" : "rgb(var(--success))" } })), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-muted", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 rounded-full bg-accent" }), "Food"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 rounded-full", style: { background: gap >= 0 ? "rgb(var(--carbs))" : "rgb(var(--success))" } }), gap >= 0 ? "Body fat" : "Extra from food")), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug text-muted" }, gap > 0.5 ? `Your body uses about ${thousands(burn)} kcal. Food covers ${thousands(eat)}, and the other ${thousands(gap)} comes from body fat.` : gap < -0.5 ? `Your body uses about ${thousands(burn)} kcal. The extra ${thousands(-gap)} from food goes toward building muscle, with a little stored as fat.` : `Food covers everything your body uses, about ${thousands(burn)} kcal.`));
   }
-  function TargetCard({ title, role, t, burn }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "rounded-[20px] bg-raised p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-[15px] font-semibold" }, title), role && /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[12px] leading-snug text-muted" }, role), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[13px] font-medium text-muted" }, "Eat in total"), /* @__PURE__ */ React.createElement("p", { className: "font-display text-[30px] font-bold leading-none tabular-nums" }, thousands(t.kcal), /* @__PURE__ */ React.createElement("span", { className: "ml-1.5 font-sans text-[14px] font-medium text-muted" }, "kcal")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[12px] leading-snug text-muted" }, "All your meals and snacks for the day added together, made up of:"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-[13px]" }, [["Protein", t.protein, "--protein"], ["Carbs", t.carbs, "--carbs"], ["Fats", t.fat, "--fat"]].map(([n, g, c]) => /* @__PURE__ */ React.createElement("div", { key: n }, /* @__PURE__ */ React.createElement("p", { className: "flex items-center gap-1.5 text-muted" }, /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 rounded-full", style: { background: `rgb(var(${c}))` }, "aria-hidden": "true" }), n), /* @__PURE__ */ React.createElement("p", { className: "font-display text-[17px] font-bold tabular-nums" }, r0(g), /* @__PURE__ */ React.createElement("span", { className: "font-sans text-[12px] font-medium text-muted" }, " g"))))), burn > 0 && /* @__PURE__ */ React.createElement(BurnBar, { eat: t.kcal, burn }));
+  function TargetCard({ title, role, t: t2, burn }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "rounded-[20px] bg-raised p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-[15px] font-semibold" }, title), role && /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[12px] leading-snug text-muted" }, role), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[13px] font-medium text-muted" }, "Eat in total"), /* @__PURE__ */ React.createElement("p", { className: "font-display text-[30px] font-bold leading-none tabular-nums" }, thousands(t2.kcal), /* @__PURE__ */ React.createElement("span", { className: "ml-1.5 font-sans text-[14px] font-medium text-muted" }, "kcal")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[12px] leading-snug text-muted" }, "All your meals and snacks for the day added together, made up of:"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-[13px]" }, [["Protein", t2.protein, "--protein"], ["Carbs", t2.carbs, "--carbs"], ["Fats", t2.fat, "--fat"]].map(([n, g, c]) => /* @__PURE__ */ React.createElement("div", { key: n }, /* @__PURE__ */ React.createElement("p", { className: "flex items-center gap-1.5 text-muted" }, /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 rounded-full", style: { background: `rgb(var(${c}))` }, "aria-hidden": "true" }), n), /* @__PURE__ */ React.createElement("p", { className: "font-display text-[17px] font-bold tabular-nums" }, r0(g), /* @__PURE__ */ React.createElement("span", { className: "font-sans text-[12px] font-medium text-muted" }, " g"))))), burn > 0 && /* @__PURE__ */ React.createElement(BurnBar, { eat: t2.kcal, burn }));
   }
   function PlanSummary({ profile, plan, onLonger }) {
     const sculpt = profile.program === "sculpt";
@@ -5222,15 +5427,15 @@ react-dom/cjs/react-dom-client.production.js:
   function EnergyCard() {
     const { plan, profile, today, getDay, targetsOn, go } = useApp();
     const unit = profile.unit;
-    const t = targetsOn(today);
-    const burn = plan.tdee + (t.actBurn || 0);
+    const t2 = targetsOn(today);
+    const burn = plan.tdee + (t2.actBurn || 0);
     const eaten = sumFoods(getDay(today).foods).kcal;
-    const tol = Math.max(100, t.kcal * 0.07);
+    const tol = Math.max(100, t2.kcal * 0.07);
     let status;
-    if (eaten > t.kcal + tol) status = { tone: "over", chip: "Over", text: `You've eaten ${thousands(eaten - t.kcal)} kcal more than today's total${burn > eaten ? `, but you're still ${thousands(burn - eaten)} kcal below your burn` : `, so you're ${thousands(eaten - burn)} kcal above your burn`}.` };
-    else if (eaten >= t.kcal - tol) status = { tone: "good", chip: "Enough", text: `You've eaten ${thousands(eaten)} of ${thousands(t.kcal)} kcal. That's right on today's plan.` };
-    else if ((/* @__PURE__ */ new Date()).getHours() >= 19) status = { tone: "under", chip: "Under", text: `You've eaten ${thousands(t.kcal - eaten)} kcal less than today's total. A small gap is fine, but eating much less than planned makes training harder and costs muscle.` };
-    else status = { tone: "left", chip: `${thousands(t.kcal - eaten)} left`, text: `You've eaten ${thousands(eaten)} of ${thousands(t.kcal)} kcal so far today.` };
+    if (eaten > t2.kcal + tol) status = { tone: "over", chip: "Over", text: `You've eaten ${thousands(eaten - t2.kcal)} kcal more than today's total${burn > eaten ? `, but you're still ${thousands(burn - eaten)} kcal below your burn` : `, so you're ${thousands(eaten - burn)} kcal above your burn`}.` };
+    else if (eaten >= t2.kcal - tol) status = { tone: "good", chip: "Enough", text: `You've eaten ${thousands(eaten)} of ${thousands(t2.kcal)} kcal. That's right on today's plan.` };
+    else if ((/* @__PURE__ */ new Date()).getHours() >= 19) status = { tone: "under", chip: "Under", text: `You've eaten ${thousands(t2.kcal - eaten)} kcal less than today's total. A small gap is fine, but eating much less than planned makes training harder and costs muscle.` };
+    else status = { tone: "left", chip: `${thousands(t2.kcal - eaten)} left`, text: `You've eaten ${thousands(eaten)} of ${thousands(t2.kcal)} kcal so far today.` };
     let planWeek = 0;
     let planPast = 0;
     let actPast = 0;
@@ -5247,7 +5452,7 @@ react-dom/cjs/react-dom-client.production.js:
         }
       }
     });
-    return /* @__PURE__ */ React.createElement(Panel, { "aria-label": "How today works" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("p", { className: "min-w-0 text-[15px] font-semibold" }, "How today works", /* @__PURE__ */ React.createElement(InfoTip, { text: "Your daily burn is the calories your body uses in a day: breathing, digesting, moving and your usual workouts. It happens on its own, so you don't need extra exercise to burn off your food." })), /* @__PURE__ */ React.createElement("span", { "aria-label": "Today's status", className: `shrink-0 rounded-full px-2.5 py-1 text-[12px] font-bold tabular-nums ${STATUS_CLS[status.tone]}` }, status.chip)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[14px] leading-snug" }, "Eat ", /* @__PURE__ */ React.createElement("b", { className: "tabular-nums" }, thousands(t.kcal), " kcal"), " in total today", t.dayType ? `, a ${DAY_TYPES[t.dayType].name}` : "", t.appTotal ? Math.abs(t.actAdd) > 0.5 ? `, which is ${thousands(Math.abs(t.actAdd))} kcal ${t.actAdd > 0 ? "more" : "less"} than usual because of your app's whole-day total` : "" : t.actAdd > 0.5 ? `, including ${thousands(t.actAdd)} kcal back for today's extra activity` : "", "."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, status.text), /* @__PURE__ */ React.createElement(BurnBar, { eat: t.kcal, burn }), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[12px] leading-snug text-muted" }, t.appTotal ? `Your burn today comes from your app's whole-day total. ` : "", "Your usual workouts are already counted, so don't eat them back.", plan.useLearned ? " Your daily burn is learned from your own logs." : ""), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-2 text-[13px]" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-raised px-3 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-muted" }, "This week's plan"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold tabular-nums" }, Math.abs(planWeek) < 1 ? "Same as your burn" : `${thousands(Math.abs(planWeek))} kcal ${balanceWord(planWeek)}`), /* @__PURE__ */ React.createElement("p", { className: "text-[12px] tabular-nums text-muted" }, "about ", t1(wOut(Math.abs(planWeek) / KCAL_PER_KG, unit)), " ", wUnit(unit), " ", planWeek < 0 ? "of fat lost" : "gained")), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-raised px-3 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-muted" }, past ? `Logged days (${past})` : "Logged days"), past ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "font-semibold tabular-nums" }, thousands(Math.abs(actPast)), " kcal ", balanceWord(actPast)), /* @__PURE__ */ React.createElement("p", { className: "text-[12px] tabular-nums text-muted" }, "plan was ", thousands(Math.abs(planPast)), " ", balanceWord(planPast))) : /* @__PURE__ */ React.createElement("p", { className: "text-[12px] leading-snug text-muted" }, "Nothing logged earlier this week yet"))), /* @__PURE__ */ React.createElement(GoalLine, { plan, unit, onSet: () => go("profile") }));
+    return /* @__PURE__ */ React.createElement(Panel, { "aria-label": "How today works" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("p", { className: "min-w-0 text-[15px] font-semibold" }, "How today works", /* @__PURE__ */ React.createElement(InfoTip, { text: "Your daily burn is the calories your body uses in a day: breathing, digesting, moving and your usual workouts. It happens on its own, so you don't need extra exercise to burn off your food." })), /* @__PURE__ */ React.createElement("span", { "aria-label": "Today's status", className: `shrink-0 rounded-full px-2.5 py-1 text-[12px] font-bold tabular-nums ${STATUS_CLS[status.tone]}` }, status.chip)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[14px] leading-snug" }, "Eat ", /* @__PURE__ */ React.createElement("b", { className: "tabular-nums" }, thousands(t2.kcal), " kcal"), " in total today", t2.dayType ? `, a ${DAY_TYPES[t2.dayType].name}` : "", t2.appTotal ? Math.abs(t2.actAdd) > 0.5 ? `, which is ${thousands(Math.abs(t2.actAdd))} kcal ${t2.actAdd > 0 ? "more" : "less"} than usual because of your app's whole-day total` : "" : t2.actAdd > 0.5 ? `, including ${thousands(t2.actAdd)} kcal back for today's extra activity` : "", "."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, status.text), /* @__PURE__ */ React.createElement(BurnBar, { eat: t2.kcal, burn }), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[12px] leading-snug text-muted" }, t2.appTotal ? `Your burn today comes from your app's whole-day total. ` : "", "Your usual workouts are already counted, so don't eat them back.", plan.useLearned ? " Your daily burn is learned from your own logs." : ""), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-2 text-[13px]" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-raised px-3 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-muted" }, "This week's plan"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold tabular-nums" }, Math.abs(planWeek) < 1 ? "Same as your burn" : `${thousands(Math.abs(planWeek))} kcal ${balanceWord(planWeek)}`), /* @__PURE__ */ React.createElement("p", { className: "text-[12px] tabular-nums text-muted" }, "about ", t1(wOut(Math.abs(planWeek) / KCAL_PER_KG, unit)), " ", wUnit(unit), " ", planWeek < 0 ? "of fat lost" : "gained")), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-raised px-3 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-muted" }, past ? `Logged days (${past})` : "Logged days"), past ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "font-semibold tabular-nums" }, thousands(Math.abs(actPast)), " kcal ", balanceWord(actPast)), /* @__PURE__ */ React.createElement("p", { className: "text-[12px] tabular-nums text-muted" }, "plan was ", thousands(Math.abs(planPast)), " ", balanceWord(planPast))) : /* @__PURE__ */ React.createElement("p", { className: "text-[12px] leading-snug text-muted" }, "Nothing logged earlier this week yet"))), /* @__PURE__ */ React.createElement(GoalLine, { plan, unit, onSet: () => go("profile") }));
   }
   function CheckinSheet({ open, onClose }) {
     const { today, getDay, updateDay, profile, saveProfile, saveMeasure, toast } = useApp();
@@ -5307,7 +5512,7 @@ react-dom/cjs/react-dom-client.production.js:
       },
       /* @__PURE__ */ React.createElement("span", { className: "text-[28px]", "aria-hidden": "true" }, x.e),
       /* @__PURE__ */ React.createElement("span", { className: "text-[15px] font-semibold" }, x.label)
-    ))), step === 1 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, breakfasts.map(({ m, t }) => /* @__PURE__ */ React.createElement(OptionCard, { key: m.id, selected: st.breakfast === m.id, onClick: () => set({ breakfast: m.id }), title: m.n, desc: `${thousands(t.kcal)} kcal, ${r0(t.p)} g protein`, lead: m.e })), /* @__PURE__ */ React.createElement(OptionCard, { selected: st.breakfast === "", onClick: () => set({ breakfast: "" }), title: "I'll log it later", desc: "Skip breakfast for now", lead: "⏭️" })), step === 2 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, focusFor(profile.sex).map((x) => /* @__PURE__ */ React.createElement(OptionCard, { key: x.id, selected: st.focus === x.id, onClick: () => set({ focus: x.id }), title: x.label, lead: x.e, desc: FOCUS_DESC[x.id] })), st.energy === "low" && (st.focus === "glute" || st.focus === "train") && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl bg-carbs/20 p-3 text-[13px] leading-snug" }, "Low energy and a heavy session don't mix well. Going lighter today and training tomorrow keeps your week on plan.", /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement(Btn, { size: "sm", variant: "soft", onClick: () => set({ focus: profile.sex === "female" ? "waist" : "active" }) }, profile.sex === "female" ? "Switch to slim-waist" : "Switch to light activity")))), step === 3 && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-[14px] leading-snug text-muted" }, profile.sex === "male" ? "Playing football or doing an upper-body session today?" : "Skipping rope, dancing or doing extra cardio today?", " Add it so your food and water account for it. You can also add it later from the Today screen."), st.acts.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "divide-y divide-line/50 rounded-[20px] bg-raised px-4" }, st.acts.map((a) => /* @__PURE__ */ React.createElement(ActivityRow, { key: a.id, a, kg: profile.weightKg, onRemove: () => set({ acts: st.acts.filter((x) => x.id !== a.id) }) }))), /* @__PURE__ */ React.createElement(ActivityForm, { key: st.acts.length, sex: profile.sex, kg: profile.weightKg, submitLabel: "Add to today", onAdd: (a) => set({ acts: [...st.acts, a] }) })), step === 4 && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[13px] font-medium text-muted" }, "Water so far today"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => set({ water: st.water + 250 }), className: "press h-12 rounded-2xl bg-water px-4 text-[15px] font-bold text-[#102026]" }, "+250 ml"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => set({ water: st.water + 500 }), className: "press h-12 rounded-2xl bg-water px-4 text-[15px] font-bold text-[#102026]" }, "+500 ml"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto font-display text-[20px] font-bold tabular-nums" }, st.water, " ml"))), /* @__PURE__ */ React.createElement(
+    ))), step === 1 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, breakfasts.map(({ m, t: t2 }) => /* @__PURE__ */ React.createElement(OptionCard, { key: m.id, selected: st.breakfast === m.id, onClick: () => set({ breakfast: m.id }), title: m.n, desc: `${thousands(t2.kcal)} kcal, ${r0(t2.p)} g protein`, lead: m.e })), /* @__PURE__ */ React.createElement(OptionCard, { selected: st.breakfast === "", onClick: () => set({ breakfast: "" }), title: "I'll log it later", desc: "Skip breakfast for now", lead: "⏭️" })), step === 2 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, focusFor(profile.sex).map((x) => /* @__PURE__ */ React.createElement(OptionCard, { key: x.id, selected: st.focus === x.id, onClick: () => set({ focus: x.id }), title: x.label, lead: x.e, desc: FOCUS_DESC[x.id] })), st.energy === "low" && (st.focus === "glute" || st.focus === "train") && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl bg-carbs/20 p-3 text-[13px] leading-snug" }, "Low energy and a heavy session don't mix well. Going lighter today and training tomorrow keeps your week on plan.", /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement(Btn, { size: "sm", variant: "soft", onClick: () => set({ focus: profile.sex === "female" ? "waist" : "active" }) }, profile.sex === "female" ? "Switch to slim-waist" : "Switch to light activity")))), step === 3 && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-[14px] leading-snug text-muted" }, profile.sex === "male" ? "Playing football or doing an upper-body session today?" : "Skipping rope, dancing or doing extra cardio today?", " Add it so your food and water account for it. You can also add it later from the Today screen."), st.acts.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "divide-y divide-line/50 rounded-[20px] bg-raised px-4" }, st.acts.map((a) => /* @__PURE__ */ React.createElement(ActivityRow, { key: a.id, a, kg: profile.weightKg, onRemove: () => set({ acts: st.acts.filter((x) => x.id !== a.id) }) }))), /* @__PURE__ */ React.createElement(ActivityForm, { key: st.acts.length, sex: profile.sex, kg: profile.weightKg, submitLabel: "Add to today", onAdd: (a) => set({ acts: [...st.acts, a] }) })), step === 4 && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[13px] font-medium text-muted" }, "Water so far today"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => set({ water: st.water + 250 }), className: "press h-12 rounded-2xl bg-water px-4 text-[15px] font-bold text-[#102026]" }, "+250 ml"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => set({ water: st.water + 500 }), className: "press h-12 rounded-2xl bg-water px-4 text-[15px] font-bold text-[#102026]" }, "+500 ml"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto font-display text-[20px] font-bold tabular-nums" }, st.water, " ml"))), /* @__PURE__ */ React.createElement(
       Field,
       {
         label: "Morning weight (optional)",
@@ -5409,8 +5614,8 @@ react-dom/cjs/react-dom-client.production.js:
     const custom = getCustomFoods();
     const staples = useMemo(() => QUICK.map(quickItem), []);
     const meals = useMemo(() => MEALS.map((m) => {
-      const t = sumParts(mealParts(m));
-      return { key: m.id, e: m.e, n: m.n, kcal: t.kcal, p: t.p, c: t.c, f: t.f, make: () => makeMealItem(m, 1) };
+      const t2 = sumParts(mealParts(m));
+      return { key: m.id, e: m.e, n: m.n, kcal: t2.kcal, p: t2.p, c: t2.c, f: t2.f, make: () => makeMealItem(m, 1) };
     }), []);
     const tap = (it) => {
       onLog(it.make(), `Logged ${it.n}`);
@@ -5434,8 +5639,8 @@ react-dom/cjs/react-dom-client.production.js:
     return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick, className: "press flex min-h-[56px] min-w-0 flex-1 items-center gap-3 rounded-2xl bg-raised px-3 py-2 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface text-[20px]", "aria-hidden": "true" }, food.e || "🍽️"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "line-clamp-2 text-[14px] font-semibold leading-snug" }, food.n), /* @__PURE__ */ React.createElement("span", { className: "block text-[12px] leading-snug text-muted" }, line)), /* @__PURE__ */ React.createElement(Icon, { name: "ChevronRight", size: 18, className: "shrink-0 text-muted" })), onQuick && /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Log ${food.n} again`, onClick: onQuick, className: "press grid h-12 w-11 shrink-0 place-items-center rounded-xl bg-accent text-onaccent" }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 18 })), onRemove && /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Delete ${food.n}`, onClick: onRemove, className: "press grid h-10 w-9 shrink-0 place-items-center rounded-xl text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "X", size: 16 })));
   }
   function MealPickRow({ meal, scale = 1, onClick, onQuick }) {
-    const t = sumParts(mealParts(meal, scale));
-    const row = /* @__PURE__ */ React.createElement("button", { type: "button", onClick, className: "press flex min-h-[56px] w-full min-w-0 flex-1 items-center gap-3 rounded-2xl bg-raised px-3 py-2 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface text-[20px]", "aria-hidden": "true" }, meal.e), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "line-clamp-2 text-[14px] font-semibold leading-snug" }, meal.n, scaleLabel(scale)), /* @__PURE__ */ React.createElement("span", { className: "block text-[12px] text-muted" }, thousands(t.kcal), " kcal for a ", r0(t.grams), " g plate")), /* @__PURE__ */ React.createElement(Icon, { name: "ChevronRight", size: 18, className: "shrink-0 text-muted" }));
+    const t2 = sumParts(mealParts(meal, scale));
+    const row = /* @__PURE__ */ React.createElement("button", { type: "button", onClick, className: "press flex min-h-[56px] w-full min-w-0 flex-1 items-center gap-3 rounded-2xl bg-raised px-3 py-2 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface text-[20px]", "aria-hidden": "true" }, meal.e), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "line-clamp-2 text-[14px] font-semibold leading-snug" }, meal.n, scaleLabel(scale)), /* @__PURE__ */ React.createElement("span", { className: "block text-[12px] text-muted" }, thousands(t2.kcal), " kcal for a ", r0(t2.grams), " g plate")), /* @__PURE__ */ React.createElement(Icon, { name: "ChevronRight", size: 18, className: "shrink-0 text-muted" }));
     if (!onQuick) return row;
     return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, row, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Log ${meal.n} again`, onClick: onQuick, className: "press grid h-12 w-11 shrink-0 place-items-center rounded-xl bg-accent text-onaccent" }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 18 })));
   }
@@ -5657,7 +5862,7 @@ react-dom/cjs/react-dom-client.production.js:
     const day = getDay(date);
     const sculpt = profile.program === "sculpt";
     const dt = dayTypeOf(day, date);
-    const t = targetsOn(date);
+    const t2 = targetsOn(date);
     const eaten = sumFoods(day.foods);
     const logItem = (item, msg) => {
       updateDay(date, (d) => ({ ...d, foods: [...d.foods, item] }));
@@ -5688,7 +5893,7 @@ react-dom/cjs/react-dom-client.production.js:
       updateDay(date, (d) => ({ ...d, dayType: nextType }));
       toast(`${relDay(date, today)} is now a ${DAY_TYPES[nextType].name}`);
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement(DateStrip, { value: date, onChange: setDate, today }), /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("div", { className: "mb-3.5 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("h2", { className: "font-display text-[17px] font-semibold tracking-tight" }, relDay(date, today)), sculpt && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: flipType, className: "press inline-flex items-center gap-1.5 rounded-full bg-raised px-3 py-1.5 text-[12px] font-semibold", "aria-label": `${DAY_TYPES[dt].name}. Tap to switch day type.` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, DAY_TYPES[dt].emoji), DAY_TYPES[dt].name)), /* @__PURE__ */ React.createElement("div", { className: "space-y-3.5" }, /* @__PURE__ */ React.createElement(MacroRow, { label: "Calories", eaten: eaten.kcal, target: t.kcal, color: "--accent", unit: " kcal", warnOver: true }), /* @__PURE__ */ React.createElement(MacroRow, { label: "Protein", eaten: eaten.p, target: t.protein, color: "--protein", unit: "g" }), /* @__PURE__ */ React.createElement(MacroRow, { label: "Carbs", eaten: eaten.c, target: t.carbs, color: "--carbs", unit: "g" }), /* @__PURE__ */ React.createElement(MacroRow, { label: "Fats", eaten: eaten.f, target: t.fat, color: "--fat", unit: "g" }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(Btn, { size: "lg", onClick: () => {
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement(DateStrip, { value: date, onChange: setDate, today }), /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("div", { className: "mb-3.5 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("h2", { className: "font-display text-[17px] font-semibold tracking-tight" }, relDay(date, today)), sculpt && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: flipType, className: "press inline-flex items-center gap-1.5 rounded-full bg-raised px-3 py-1.5 text-[12px] font-semibold", "aria-label": `${DAY_TYPES[dt].name}. Tap to switch day type.` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, DAY_TYPES[dt].emoji), DAY_TYPES[dt].name)), /* @__PURE__ */ React.createElement("div", { className: "space-y-3.5" }, /* @__PURE__ */ React.createElement(MacroRow, { label: "Calories", eaten: eaten.kcal, target: t2.kcal, color: "--accent", unit: " kcal", warnOver: true }), /* @__PURE__ */ React.createElement(MacroRow, { label: "Protein", eaten: eaten.p, target: t2.protein, color: "--protein", unit: "g" }), /* @__PURE__ */ React.createElement(MacroRow, { label: "Carbs", eaten: eaten.c, target: t2.carbs, color: "--carbs", unit: "g" }), /* @__PURE__ */ React.createElement(MacroRow, { label: "Fats", eaten: eaten.f, target: t2.fat, color: "--fat", unit: "g" }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(Btn, { size: "lg", onClick: () => {
       setEditItem(null);
       setAddOpen(true);
     } }, /* @__PURE__ */ React.createElement(Icon, { name: "Search", size: 19 }), "Add food"), /* @__PURE__ */ React.createElement(Btn, { size: "lg", variant: "soft", onClick: () => setQuickOpen(true) }, /* @__PURE__ */ React.createElement(Icon, { name: "Zap", size: 19 }), "Quick add")), date === today && /* @__PURE__ */ React.createElement(Btn, { variant: "soft", className: "w-full", onClick: () => setIdeasOpen(true) }, /* @__PURE__ */ React.createElement(Icon, { name: "Sparkles", size: 18 }), "What should I eat?"), date === today && /* @__PURE__ */ React.createElement(Btn, { variant: "soft", className: "w-full", onClick: () => setProteinOpen(true) }, /* @__PURE__ */ React.createElement(Icon, { name: "Egg", size: 18 }), "Protein top-up"), /* @__PURE__ */ React.createElement("section", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Logged foods", aside: day.foods.length ? /* @__PURE__ */ React.createElement("span", { className: "text-[13px] tabular-nums text-muted" }, day.foods.length, " ", day.foods.length === 1 ? "item" : "items") : null }), day.foods.length ? /* @__PURE__ */ React.createElement(Panel, { className: "divide-y divide-line/50 py-1" }, day.foods.map((f) => /* @__PURE__ */ React.createElement(FoodRow, { key: f.id, f, onEdit: () => {
@@ -6138,8 +6343,8 @@ react-dom/cjs/react-dom-client.production.js:
   }
   function ideaTitle(parts) {
     const names = parts.map(partLabel).map((s, i) => i === 0 ? s : lowerFirst(s));
-    const t = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
-    return t.replace(/\s*\([^)]*\)/g, "");
+    const t2 = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
+    return t2.replace(/\s*\([^)]*\)/g, "");
   }
   function fitList(list, B, lo, hi, title) {
     const k = ideaTotals(list.map(([id, o, g]) => ideaPart(id, o, g))).kcal || 1;
@@ -6173,11 +6378,11 @@ react-dom/cjs/react-dom-client.production.js:
     return out;
   }
   const snackIdeas = (B) => SNACK_IDEAS.map((list) => fitList(list, B, 0.5, 2, null));
-  function scoreIdea(t, B, Pt, carbPref, eatenIds, parts) {
-    const ek = Math.abs(t.kcal - B) / Math.max(B, 1);
-    const ep = Math.max(0, Pt - t.p) / Math.max(Pt, 1) + 0.25 * Math.max(0, t.p - 1.8 * Pt) / Math.max(Pt, 1);
-    const cs = t.kcal > 0 ? t.c * 4 / t.kcal : 0;
-    const fs = t.kcal > 0 ? t.f * 9 / t.kcal : 0;
+  function scoreIdea(t2, B, Pt, carbPref, eatenIds, parts) {
+    const ek = Math.abs(t2.kcal - B) / Math.max(B, 1);
+    const ep = Math.max(0, Pt - t2.p) / Math.max(Pt, 1) + 0.25 * Math.max(0, t2.p - 1.8 * Pt) / Math.max(Pt, 1);
+    const cs = t2.kcal > 0 ? t2.c * 4 / t2.kcal : 0;
+    const fs = t2.kcal > 0 ? t2.f * 9 / t2.kcal : 0;
     const cp = carbPref === "high" ? Math.max(0, 0.4 - cs) : carbPref === "low" ? Math.max(0, cs - 0.35) : 0.5 * (Math.max(0, 0.25 - cs) + Math.max(0, cs - 0.6));
     const fp = Math.max(0, fs - 0.4);
     const rep = parts.some((x) => eatenIds.has(x.food.id)) ? 0.15 : 0;
@@ -6220,14 +6425,14 @@ react-dom/cjs/react-dom-client.production.js:
     const slots = left.length ? left : pattern.slots.slice(-1);
     const slot = slots.find((s) => s.id === slotId) || slots[0];
     const day = getDay(today);
-    const t = targetsOn(today);
+    const t2 = targetsOn(today);
     const eaten = sumFoods(day.foods);
-    const remK = t.kcal - eaten.kcal;
-    const remP = Math.max(0, t.protein - eaten.p);
+    const remK = t2.kcal - eaten.kcal;
+    const remP = Math.max(0, t2.protein - eaten.p);
     const frac = slot.share / slots.reduce((a, s) => a + s.share, 0);
     const B = Math.max(0, remK * frac);
     const Pt = Math.max(10, remP * frac);
-    const carbPref = t.dayType === "glute" ? "high" : t.dayType === "waist" ? "low" : "mid";
+    const carbPref = t2.dayType === "glute" ? "high" : t2.dayType === "waist" ? "low" : "mid";
     const done = remK < 150;
     const kind = done || slot.id === "snack" || B < 300 ? "snack" : slot.id === "breakfast" ? "breakfast" : "main";
     const budget = done ? 180 : B;
@@ -6261,18 +6466,18 @@ react-dom/cjs/react-dom-client.production.js:
   function useProteinToday() {
     const { profile, today, getDay, targetsOn } = useApp();
     const day = getDay(today);
-    const t = targetsOn(today);
+    const t2 = targetsOn(today);
     const eaten = sumFoods(day.foods);
     const now = /* @__PURE__ */ new Date();
     const hour = now.getHours() + now.getMinutes() / 60;
     return {
-      t,
+      t: t2,
       eaten,
       hour,
-      pace: proteinPace(t.protein, eaten.p, profile.meals, hour),
+      pace: proteinPace(t2.protein, eaten.p, profile.meals, hour),
       trained: trainedToday(day),
-      kcalLeft: t.kcal - eaten.kcal,
-      style: proteinStyle(profile.program, t.dayType)
+      kcalLeft: t2.kcal - eaten.kcal,
+      style: proteinStyle(profile.program, t2.dayType)
     };
   }
   function useLogTopup() {
@@ -6295,7 +6500,7 @@ react-dom/cjs/react-dom-client.production.js:
     const log = useLogTopup();
     const afterTraining = s.trained && s.pace.left >= 20;
     const show = s.pace.show || afterTraining;
-    const prices = useMemo(() => loadPrices(), [rev, open]);
+    const prices = useMemo(() => loadPrices(profile.country), [rev, open, profile.country]);
     const opts = useMemo(() => {
       if (!show) return [];
       const args = { left: s.pace.left, kcalLeft: s.kcalLeft, program: profile.program, style: s.style, prices };
@@ -6328,12 +6533,12 @@ react-dom/cjs/react-dom-client.production.js:
     const { profile } = useApp();
     const [tab, setTab] = useState(startTab);
     const [sortBy, setSortBy] = useState("best");
-    const [prices, setPrices] = useState(loadPrices);
+    const [prices, setPrices] = useState(() => loadPrices(profile.country));
     const [draft, setDraft] = useState({});
     useEffect(() => {
       if (open) {
         setTab(startTab);
-        setPrices(loadPrices());
+        setPrices(loadPrices(profile.country));
         setDraft({});
       }
     }, [open, startTab]);
@@ -6371,7 +6576,7 @@ react-dom/cjs/react-dom-client.production.js:
       setPrices(next);
       savePrices({ ...next, currency: v.trim() || "FCFA" });
     };
-    const cur = prices.currency.trim() || "FCFA";
+    const cur = prices.currency.trim() || countryOf(profile.country).cur;
     return /* @__PURE__ */ React.createElement(Sheet, { open, onClose, title: "Protein" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement(Segmented, { label: "Protein view", options: [{ value: "ideas", label: "Top-up ideas" }, { value: "prices", label: "Market prices" }], value: tab, onChange: setTab }), tab === "ideas" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl bg-raised p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-[15px] font-semibold" }, s.pace.left >= 5 ? `${r0(s.pace.left)} g of protein to go today` : "You’ve reached your protein target today"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, thousands(Math.max(0, s.kcalLeft)), " kcal left · about ", s.pace.perMeal, " g at each meal"), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[13px] leading-snug text-muted" }, STYLE_NOTE[s.style])), /* @__PURE__ */ React.createElement(Segmented, { size: "sm", label: "Sort ideas", options: [{ value: "best", label: "Best for your plan" }, { value: "price", label: "Cheapest" }], value: sortBy, onChange: setSortBy }), sortBy === "price" && !byPrice && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl bg-raised px-4 py-3 text-[13px] leading-snug" }, /* @__PURE__ */ React.createElement("p", null, "Add at least two market prices, then Sculpt can sort these by cost."), /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-1.5 font-semibold text-accentink", onClick: () => setTab("prices") }, "Add prices")), !res.anyFit && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[13px] leading-snug text-muted" }, "Everything here goes a little over today’s calories, so the leanest choices come first."), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, res.list.map((x) => /* @__PURE__ */ React.createElement(TopupRow, { key: x.id, x, cur, onLog: () => {
       log(x);
       onClose();
@@ -6401,6 +6606,7 @@ react-dom/cjs/react-dom-client.production.js:
     return /* @__PURE__ */ React.createElement(Panel, { "aria-label": "Protein target" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, "Protein target"), /* @__PURE__ */ React.createElement("p", { className: "font-display text-[28px] font-semibold tabular-nums tracking-tight" }, r0(cur), " g ", /* @__PURE__ */ React.createElement("span", { className: "text-[14px] font-medium text-muted" }, "a day"))), /* @__PURE__ */ React.createElement("span", { className: "text-[26px]", "aria-hidden": "true" }, "🥚")), /* @__PURE__ */ React.createElement(Segmented, { className: "mt-3", label: "Protein level", options: [{ value: "full", label: `Full · ${r0(full)} g` }, { value: "budget", label: `Budget · ${r0(budget)} g` }], value: level, onChange: pick }), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[13px] leading-snug text-muted" }, level === "budget" ? "Budget still protects your muscle and is easier to afford. Switch to Full when protein is easy to get." : "Full gives your muscles a little extra. Budget still protects them when protein gets expensive."), sculpt && cyc && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[13px] leading-snug text-muted" }, "Glute days ", r0(cyc.glute.protein), " g, slim-waist days ", r0(cyc.waist.protein), " g."), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[13px] leading-snug text-muted" }, "Based on ", plan.refWhy, " (", kgText(plan.refKg, profile.unit), "). About ", perMeal, " g at each meal."), /* @__PURE__ */ React.createElement(Btn, { variant: "soft", size: "sm", className: "mt-3 w-full", onClick: () => setOpen(true) }, /* @__PURE__ */ React.createElement(Icon, { name: "Coins", size: 16 }), "Compare protein prices"), /* @__PURE__ */ React.createElement(ProteinSheet, { open, onClose: () => setOpen(false), startTab: "prices" }));
   }
   function OnlineSearch({ q, onPick }) {
+    const { profile } = useApp();
     const [st, setSt] = useState({ q: "", status: "idle", usda: null, off: null });
     const cur = st.q === q ? st : { q, status: "idle", usda: null, off: null };
     const run = async () => {
@@ -6410,7 +6616,7 @@ react-dom/cjs/react-dom-client.production.js:
       }
       setSt({ q, status: "loading", usda: null, off: null });
       try {
-        const r = await searchOnline(q);
+        const r = await searchOnline(q, profile.country);
         setSt((s) => s.q === q ? { q, status: "done", usda: r.usda, off: r.off } : s);
       } catch (e) {
         setSt((s) => s.q === q ? { q, status: "error", usda: null, off: null } : s);
@@ -6431,8 +6637,8 @@ react-dom/cjs/react-dom-client.production.js:
     const sculpt = profile.program === "sculpt";
     const sim = (id) => dayTargets(plan, dateK, (x) => x === dateK ? id : dayTypeOf(readDay(x), x));
     const opts = sculpt ? { glute: sim("glute"), waist: sim("waist") } : null;
-    const deltaText = (t2) => {
-      const d = Math.round(t2.kcal - plan.tdee);
+    const deltaText = (t3) => {
+      const d = Math.round(t3.kcal - plan.tdee);
       return d === 0 ? "Same as your burn" : `${thousands(Math.abs(d))} kcal ${d > 0 ? "above" : "below"} your burn`;
     };
     const choose = (id) => {
@@ -6441,13 +6647,13 @@ react-dom/cjs/react-dom-client.production.js:
       buzz(12);
       toast(sculpt ? `${DAY_TYPES[id].name} set. Targets updated.` : `${DAY_TYPES[id].name} set.`);
     };
-    const t = sculpt ? opts[dt] : null;
+    const t2 = sculpt ? opts[dt] : null;
     return /* @__PURE__ */ React.createElement("section", { "aria-label": "Day type" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1.5 rounded-[24px] bg-surface p-1.5" }, ["glute", "waist"].map((id) => {
       const D = DAY_TYPES[id];
       const on = dt === id;
       const tone = id === "glute" ? "bg-glute text-onglute" : "bg-waist text-onwaist";
       return /* @__PURE__ */ React.createElement("button", { key: id, type: "button", "aria-pressed": on, onClick: () => choose(id), className: `press rounded-[19px] px-3 text-left transition-colors ${compact ? "py-3" : "py-4"} ${on ? tone : "text-ink"}` }, /* @__PURE__ */ React.createElement("span", { className: compact ? "text-[20px]" : "text-[28px]", "aria-hidden": "true" }, D.emoji), /* @__PURE__ */ React.createElement("span", { className: `mt-1 block font-display font-semibold leading-tight tracking-tight ${compact ? "text-[14px]" : "text-[16px]"}` }, D.name), /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 block text-[12px] font-semibold leading-snug ${on ? "opacity-80" : "text-muted"}` }, sculpt ? deltaText(opts[id]) : D.note));
-    })), !compact && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-[20px] bg-surface px-4 py-3.5" }, sculpt ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] text-muted" }, "Today's target"), /* @__PURE__ */ React.createElement("p", { className: "font-display text-[24px] font-bold leading-tight tabular-nums" }, thousands(t.kcal), /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-sans text-[14px] font-medium text-muted" }, "kcal"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5 text-right text-[13px] tabular-nums" }, [["--protein", t.protein, "protein"], ["--carbs", t.carbs, "carbs"], ["--fat", t.fat, "fats"]].map(([c, g, n]) => /* @__PURE__ */ React.createElement("p", { key: n, className: "flex items-center justify-end gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 rounded-full", style: { background: `rgb(var(${c}))` }, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("b", { className: "font-semibold" }, r0(g), "g"), /* @__PURE__ */ React.createElement("span", { className: "text-muted" }, n))))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 border-t border-line/60 pt-2 text-[12px] leading-snug text-muted" }, "This week averages ", thousands(t.avg), " kcal a day. Glute days sit ", thousands(Math.abs(opts.glute.shift)), " kcal above that and slim-waist days ", thousands(Math.abs(opts.waist.shift)), " below, so the week lands on your plan.")) : /* @__PURE__ */ React.createElement("p", { className: "text-[13px] leading-snug text-muted" }, "The day type sets your training rhythm and water target. Calories follow your current program until you switch to Sculpt.")), /* @__PURE__ */ React.createElement(WeekRhythm, { dateK })));
+    })), !compact && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-[20px] bg-surface px-4 py-3.5" }, sculpt ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] text-muted" }, "Today's target"), /* @__PURE__ */ React.createElement("p", { className: "font-display text-[24px] font-bold leading-tight tabular-nums" }, thousands(t2.kcal), /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-sans text-[14px] font-medium text-muted" }, "kcal"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5 text-right text-[13px] tabular-nums" }, [["--protein", t2.protein, "protein"], ["--carbs", t2.carbs, "carbs"], ["--fat", t2.fat, "fats"]].map(([c, g, n]) => /* @__PURE__ */ React.createElement("p", { key: n, className: "flex items-center justify-end gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "h-2 w-2 rounded-full", style: { background: `rgb(var(${c}))` }, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("b", { className: "font-semibold" }, r0(g), "g"), /* @__PURE__ */ React.createElement("span", { className: "text-muted" }, n))))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 border-t border-line/60 pt-2 text-[12px] leading-snug text-muted" }, "This week averages ", thousands(t2.avg), " kcal a day. Glute days sit ", thousands(Math.abs(opts.glute.shift)), " kcal above that and slim-waist days ", thousands(Math.abs(opts.waist.shift)), " below, so the week lands on your plan.")) : /* @__PURE__ */ React.createElement("p", { className: "text-[13px] leading-snug text-muted" }, "The day type sets your training rhythm and water target. Calories follow your current program until you switch to Sculpt.")), /* @__PURE__ */ React.createElement(WeekRhythm, { dateK })));
   }
   function WarmupCard() {
     const { today, getDay, updateDay } = useApp();
@@ -7183,13 +7389,13 @@ react-dom/cjs/react-dom-client.production.js:
     const vals = r ? r.avg : d0.tot;
     const mac = r ? r.mac : { ...d0.macros, kcal: d0.kcal };
     const cov = r ? r.coverage : d0.coverage;
-    const t = targetsOn(today);
+    const t2 = targetsOn(today);
     const empty = r ? r.days === 0 : !d0.logged;
     const soft = !r;
     const hour = (/* @__PURE__ */ new Date()).getHours();
     const stillLow = !r && d0.logged && hour >= 16 && d0.coverage >= 0.6 ? MICRO_KEYS.filter((k) => k !== "na" && d0.tot[k] < targets[k] * 0.5).sort((a, b) => d0.tot[a] / targets[a] - d0.tot[b] / targets[b]).slice(0, 2) : [];
     const rows = (keys) => keys.map((k) => /* @__PURE__ */ React.createElement(MicroBar, { key: k, soft, label: MICRO_INFO[k].n, value: vals[k], target: targets[k], unit: MICRO_INFO[k].u, limit: k === "na" }));
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement(Segmented, { label: "Show", options: [{ value: "day", label: "Today" }, { value: "week", label: "7 days" }, { value: "month", label: "30 days" }], value: range, onChange: setRange }), empty ? /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("p", { className: "text-[14px] leading-snug text-muted" }, r ? "No food logged in this period yet." : "Log some food today to see your vitamins and minerals.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl bg-raised p-4 text-[13px] leading-snug" }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, cov >= 0.95 ? "Vitamins counted for all your food" : `Vitamins counted for ${r0(cov * 100)}% of your calories`), !r && d0.missing.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-muted" }, "Not counted yet: ", d0.missing.slice(0, 4).join(", "), d0.missing.length > 4 ? "…" : ""), r && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-muted" }, r.goodDays > 0 ? `Averages use the ${r.goodDays} of ${r.days} logged days where most of your food had vitamin data.` : "None of these days had enough vitamin data for an average yet.")), /* @__PURE__ */ React.createElement("section", { "aria-label": "Macros" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Macros", sub: r ? `Daily average over ${r.days} logged ${r.days === 1 ? "day" : "days"}` : "Today so far" }), /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement(MicroBar, { soft, label: "Protein", value: mac.p, target: t.protein, unit: "g" }), /* @__PURE__ */ React.createElement(MicroBar, { soft, label: "Carbs", value: mac.c, target: t.carbs, unit: "g" }), /* @__PURE__ */ React.createElement(MicroBar, { soft, label: "Fat", value: mac.f, target: t.fat, unit: "g" }), /* @__PURE__ */ React.createElement(MicroBar, { soft, label: "Fibre", value: vals.fib, target: targets.fib, unit: "g" }))), (!r || r.goodDays > 0) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { "aria-label": "Vitamins" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Vitamins" }), /* @__PURE__ */ React.createElement(Panel, null, rows(["va", "vc", "vd", "b12", "fol"]))), /* @__PURE__ */ React.createElement("section", { "aria-label": "Minerals" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Minerals" }), /* @__PURE__ */ React.createElement(Panel, null, rows(["ca", "fe", "mg", "k", "zn", "na"]))))), stillLow.length > 0 && /* @__PURE__ */ React.createElement("section", { "aria-label": "Still low today" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Still low today", sub: "Easy ways to catch up before the day ends" }), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, stillLow.map((k) => /* @__PURE__ */ React.createElement(Panel, { key: k }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, MICRO_INFO[k].n, ": ", r0(d0.tot[k] / targets[k] * 100), "% so far"), /* @__PURE__ */ React.createElement(SuggestRows, { k, targets, onLog: logSuggest }))))), /* @__PURE__ */ React.createElement("section", { "aria-label": "Often low lately" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Often low lately", sub: "From your last 30 days" }), gaps.length === 0 ? /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("p", { className: "text-[14px] leading-snug text-muted" }, month.goodDays >= 3 ? "Nothing stands out as low over your last 30 days. Keep eating a variety." : "Log at least 3 days where most of your food has vitamin data, and Sculpt will point out what you keep falling short on.")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, gaps.map((g) => /* @__PURE__ */ React.createElement(Panel, { key: g.k }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, MICRO_INFO[g.k].n, ": ", g.k === "na" ? `${r0(g.pct * 100)}% of the limit` : `about ${r0(g.pct * 100)}% of your need`), g.k === "na" && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, "Go easier on stock cubes, salt, salty snacks and packaged foods."), g.k !== "na" && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, "Everyday foods around Bamenda that help, in a normal portion:", g.k === "vd" ? " Sun on your skin also makes vitamin D, so food is only part of it." : ""), g.k !== "na" && /* @__PURE__ */ React.createElement(SuggestRows, { k: g.k, targets, onLog: logSuggest }))))), range === "day" && d0.logged && /* @__PURE__ */ React.createElement(FoodGroups, { g: d0.groups }), /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[12px] leading-snug text-muted" }, "Vitamin and mineral values come from USDA food tables and cover ", Object.keys(MICRO_DATA).length, " common foods so far, plus foods you find with Search online. Cameroonian dishes are being added in batches; until then they’re left out of these totals, as the coverage line shows. Daily needs are for adults; cooking losses aren’t counted."));
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement(Segmented, { label: "Show", options: [{ value: "day", label: "Today" }, { value: "week", label: "7 days" }, { value: "month", label: "30 days" }], value: range, onChange: setRange }), empty ? /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("p", { className: "text-[14px] leading-snug text-muted" }, r ? "No food logged in this period yet." : "Log some food today to see your vitamins and minerals.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl bg-raised p-4 text-[13px] leading-snug" }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, cov >= 0.95 ? "Vitamins counted for all your food" : `Vitamins counted for ${r0(cov * 100)}% of your calories`), !r && d0.missing.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-muted" }, "Not counted yet: ", d0.missing.slice(0, 4).join(", "), d0.missing.length > 4 ? "…" : ""), r && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-muted" }, r.goodDays > 0 ? `Averages use the ${r.goodDays} of ${r.days} logged days where most of your food had vitamin data.` : "None of these days had enough vitamin data for an average yet.")), /* @__PURE__ */ React.createElement("section", { "aria-label": "Macros" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Macros", sub: r ? `Daily average over ${r.days} logged ${r.days === 1 ? "day" : "days"}` : "Today so far" }), /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement(MicroBar, { soft, label: "Protein", value: mac.p, target: t2.protein, unit: "g" }), /* @__PURE__ */ React.createElement(MicroBar, { soft, label: "Carbs", value: mac.c, target: t2.carbs, unit: "g" }), /* @__PURE__ */ React.createElement(MicroBar, { soft, label: "Fat", value: mac.f, target: t2.fat, unit: "g" }), /* @__PURE__ */ React.createElement(MicroBar, { soft, label: "Fibre", value: vals.fib, target: targets.fib, unit: "g" }))), (!r || r.goodDays > 0) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("section", { "aria-label": "Vitamins" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Vitamins" }), /* @__PURE__ */ React.createElement(Panel, null, rows(["va", "vc", "vd", "b12", "fol"]))), /* @__PURE__ */ React.createElement("section", { "aria-label": "Minerals" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Minerals" }), /* @__PURE__ */ React.createElement(Panel, null, rows(["ca", "fe", "mg", "k", "zn", "na"]))))), stillLow.length > 0 && /* @__PURE__ */ React.createElement("section", { "aria-label": "Still low today" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Still low today", sub: "Easy ways to catch up before the day ends" }), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, stillLow.map((k) => /* @__PURE__ */ React.createElement(Panel, { key: k }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, MICRO_INFO[k].n, ": ", r0(d0.tot[k] / targets[k] * 100), "% so far"), /* @__PURE__ */ React.createElement(SuggestRows, { k, targets, onLog: logSuggest }))))), /* @__PURE__ */ React.createElement("section", { "aria-label": "Often low lately" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Often low lately", sub: "From your last 30 days" }), gaps.length === 0 ? /* @__PURE__ */ React.createElement(Panel, null, /* @__PURE__ */ React.createElement("p", { className: "text-[14px] leading-snug text-muted" }, month.goodDays >= 3 ? "Nothing stands out as low over your last 30 days. Keep eating a variety." : "Log at least 3 days where most of your food has vitamin data, and Sculpt will point out what you keep falling short on.")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, gaps.map((g) => /* @__PURE__ */ React.createElement(Panel, { key: g.k }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, MICRO_INFO[g.k].n, ": ", g.k === "na" ? `${r0(g.pct * 100)}% of the limit` : `about ${r0(g.pct * 100)}% of your need`), g.k === "na" && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, "Go easier on stock cubes, salt, salty snacks and packaged foods."), g.k !== "na" && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[13px] leading-snug text-muted" }, profile.country === "CM" ? "Everyday foods around Bamenda that help, in a normal portion:" : "Everyday foods that help, in a normal portion:", g.k === "vd" ? " Sun on your skin also makes vitamin D, so food is only part of it." : ""), g.k !== "na" && /* @__PURE__ */ React.createElement(SuggestRows, { k: g.k, targets, onLog: logSuggest }))))), range === "day" && d0.logged && /* @__PURE__ */ React.createElement(FoodGroups, { g: d0.groups }), /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[12px] leading-snug text-muted" }, "Vitamin and mineral values come from USDA food tables and cover ", Object.keys(MICRO_DATA).length, " common foods so far, plus foods you find with Search online. Cameroonian dishes are being added in batches; until then they’re left out of these totals, as the coverage line shows. Daily needs are for adults; cooking losses aren’t counted."));
   }
   const TABS = [
     { id: "home", label: "Today", icon: "House|Home", title: "Today" },
@@ -7201,7 +7407,7 @@ react-dom/cjs/react-dom-client.production.js:
   ];
   function migrateProfile(p) {
     if (!p || !(p.weightKg > 0) || !(p.heightCm > 0) || !p.program) return null;
-    const out = { experience: "beginner", equipment: "gym", sessionMins: 45, meals: 3, adaptive: true, goal: null, ...p };
+    const out = { experience: "beginner", equipment: "gym", sessionMins: 45, meals: 3, adaptive: true, goal: null, country: "CM", lang: "en", tourDone: true, ...p };
     if (out.program === "sculpt" && out.sex !== "female") out.program = "recomp";
     return out;
   }
@@ -7215,9 +7421,9 @@ react-dom/cjs/react-dom-client.production.js:
     return /* @__PURE__ */ React.createElement("header", { className: "sticky z-30 bg-bg/85 backdrop-blur-xl", style: { top: "env(safe-area-inset-top, 0px)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 px-4 pb-3 pt-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-muted" }, longDate(today)), /* @__PURE__ */ React.createElement("h1", { className: "truncate font-display text-[24px] font-bold leading-tight tracking-tight" }, title)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setTheme(theme === "dark" ? "light" : "dark"), "aria-label": theme === "dark" ? "Switch to light mode" : "Switch to dark mode", className: "press grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface text-ink" }, /* @__PURE__ */ React.createElement(Icon, { name: theme === "dark" ? "Sun" : "Moon", size: 19 }))));
   }
   function BottomNav({ tabs, tab, onChange }) {
-    return /* @__PURE__ */ React.createElement("nav", { className: "fixed inset-x-0 bottom-0 z-40 border-t border-line/60 bg-surface/90 backdrop-blur-xl", style: { paddingBottom: "env(safe-area-inset-bottom, 0px)" }, "aria-label": "Main" }, /* @__PURE__ */ React.createElement("div", { className: "mx-auto flex max-w-md items-stretch px-1" }, tabs.map((t) => {
-      const on = t.id === tab;
-      return /* @__PURE__ */ React.createElement("button", { key: t.id, type: "button", onClick: () => onChange(t.id), "aria-current": on ? "page" : void 0, className: "flex min-h-[62px] flex-1 flex-col items-center justify-center gap-0.5" }, /* @__PURE__ */ React.createElement("span", { className: `grid h-8 w-14 place-items-center rounded-full transition-colors ${on ? "bg-accent/15 text-accentink" : "text-muted"}` }, /* @__PURE__ */ React.createElement(Icon, { name: t.icon, size: 21, stroke: on ? 2.4 : 2 })), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-semibold ${on ? "text-ink" : "text-muted"}` }, t.label));
+    return /* @__PURE__ */ React.createElement("nav", { className: "fixed inset-x-0 bottom-0 z-40 border-t border-line/60 bg-surface/90 backdrop-blur-xl", style: { paddingBottom: "env(safe-area-inset-bottom, 0px)" }, "aria-label": "Main" }, /* @__PURE__ */ React.createElement("div", { className: "mx-auto flex max-w-md items-stretch px-1" }, tabs.map((t2) => {
+      const on = t2.id === tab;
+      return /* @__PURE__ */ React.createElement("button", { key: t2.id, type: "button", onClick: () => onChange(t2.id), "aria-current": on ? "page" : void 0, className: "flex min-h-[62px] flex-1 flex-col items-center justify-center gap-0.5" }, /* @__PURE__ */ React.createElement("span", { className: `grid h-8 w-14 place-items-center rounded-full transition-colors ${on ? "bg-accent/15 text-accentink" : "text-muted"}` }, /* @__PURE__ */ React.createElement(Icon, { name: t2.icon, size: 21, stroke: on ? 2.4 : 2 })), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-semibold ${on ? "text-ink" : "text-muted"}` }, t2.label));
     })));
   }
   function App() {
@@ -7280,16 +7486,16 @@ react-dom/cjs/react-dom-client.production.js:
       const meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute("content", theme === "dark" ? "#1A1220" : "#F6F1F7");
     }, [theme, dayType]);
-    const setTheme = useCallback((t) => {
-      setThemeState(t);
-      store.set("theme", t);
+    const setTheme = useCallback((t2) => {
+      setThemeState(t2);
+      store.set("theme", t2);
     }, []);
     const toast = useCallback((msg, opts = {}) => {
       const id = uid();
       setToasts((ts) => [...ts.slice(-2), { id, msg, tone: opts.tone || "ok", action: opts.action || null }]);
-      setTimeout(() => setToasts((ts) => ts.filter((t) => t.id !== id)), opts.duration || (opts.action ? 4500 : 2600));
+      setTimeout(() => setToasts((ts) => ts.filter((t2) => t2.id !== id)), opts.duration || (opts.action ? 4500 : 2600));
     }, []);
-    const dismissToast = useCallback((id) => setToasts((ts) => ts.filter((t) => t.id !== id)), []);
+    const dismissToast = useCallback((id) => setToasts((ts) => ts.filter((t2) => t2.id !== id)), []);
     useEffect(() => {
       if (!window.SCULPT_STANDALONE) return void 0;
       const onReady = () => {
@@ -7322,8 +7528,8 @@ react-dom/cjs/react-dom-client.production.js:
       const next = typeof fn === "function" ? fn(cur) : { ...cur, ...fn };
       const pl = planRef.current;
       if (pl) {
-        const t = dayTargets(pl, k, (x) => x === k ? dayTypeOf(next, k) : dayTypeOf(readDay(x), x), next);
-        next.t = { kcal: r0(t.kcal), p: r0(t.protein), c: r0(t.carbs), f: r0(t.fat) };
+        const t2 = dayTargets(pl, k, (x) => x === k ? dayTypeOf(next, k) : dayTypeOf(readDay(x), x), next);
+        next.t = { kcal: r0(t2.kcal), p: r0(t2.protein), c: r0(t2.carbs), f: r0(t2.fat) };
       }
       delete next.water;
       store.set("day:" + k, next);
@@ -7392,8 +7598,8 @@ react-dom/cjs/react-dom-client.production.js:
       setTab("home");
       bump();
     }, [bump]);
-    const go = useCallback((t, it) => {
-      setTab(t);
+    const go = useCallback((t2, it) => {
+      setTab(t2);
       setIntent(it || null);
       window.scrollTo(0, 0);
     }, []);
@@ -7440,9 +7646,21 @@ react-dom/cjs/react-dom-client.production.js:
       clearIntent,
       reloadAll
     };
-    const tabs = profile && profile.sex !== "female" ? TABS.map((t) => t.id === "sculpt" ? { ...t, label: "Body", icon: "Dumbbell", title: "Body" } : t) : TABS;
-    const current = tabs.find((t) => t.id === tab) || tabs[0];
-    return /* @__PURE__ */ React.createElement(AppCtx.Provider, { value: ctx }, !profile ? /* @__PURE__ */ React.createElement(Onboarding, null) : /* @__PURE__ */ React.createElement("div", { className: "mx-auto min-h-full max-w-md" }, /* @__PURE__ */ React.createElement(Header, { tab: current }), /* @__PURE__ */ React.createElement("main", { className: "px-4 pt-1", style: { paddingBottom: 96 } }, tab === "home" && /* @__PURE__ */ React.createElement(Dashboard, null), tab === "food" && /* @__PURE__ */ React.createElement(FoodLogger, null), tab === "nutri" && /* @__PURE__ */ React.createElement(NutrientsTab, null), tab === "sculpt" && /* @__PURE__ */ React.createElement(SculptHub, null), tab === "stats" && /* @__PURE__ */ React.createElement(Analytics, null), tab === "profile" && /* @__PURE__ */ React.createElement(ProfileScreen, null)), /* @__PURE__ */ React.createElement(BottomNav, { tabs, tab, onChange: (t) => go(t) })), /* @__PURE__ */ React.createElement(Toasts, { items: toasts, onDismiss: dismissToast }), /* @__PURE__ */ React.createElement(ConfirmDialog, { dialog, onClose: closeDialog }));
+    const tabs = profile && profile.sex !== "female" ? TABS.map((t2) => t2.id === "sculpt" ? { ...t2, label: "Body", icon: "Dumbbell", title: "Body" } : t2) : TABS;
+    const current = tabs.find((t2) => t2.id === tab) || tabs[0];
+    setLang(profile && profile.lang || detectLang());
+    const [tourOpen, setTourOpen] = useState(false);
+    useEffect(() => {
+      const on = () => setTourOpen(true);
+      window.addEventListener("sculpt-tour", on);
+      return () => window.removeEventListener("sculpt-tour", on);
+    }, []);
+    const showTour = !!profile && (tourOpen || profile.tourDone === false);
+    const endTour = () => {
+      setTourOpen(false);
+      if (profile && profile.tourDone === false) saveProfile({ ...profile, tourDone: true });
+    };
+    return /* @__PURE__ */ React.createElement(AppCtx.Provider, { value: ctx }, !profile ? /* @__PURE__ */ React.createElement(Onboarding, null) : /* @__PURE__ */ React.createElement("div", { className: "mx-auto min-h-full max-w-md" }, showTour && /* @__PURE__ */ React.createElement(QuickTour, { onDone: endTour }), /* @__PURE__ */ React.createElement(Header, { tab: current }), /* @__PURE__ */ React.createElement("main", { className: "px-4 pt-1", style: { paddingBottom: 96 } }, tab === "home" && /* @__PURE__ */ React.createElement(Dashboard, null), tab === "food" && /* @__PURE__ */ React.createElement(FoodLogger, null), tab === "nutri" && /* @__PURE__ */ React.createElement(NutrientsTab, null), tab === "sculpt" && /* @__PURE__ */ React.createElement(SculptHub, null), tab === "stats" && /* @__PURE__ */ React.createElement(Analytics, null), tab === "profile" && /* @__PURE__ */ React.createElement(ProfileScreen, null)), /* @__PURE__ */ React.createElement(BottomNav, { tabs, tab, onChange: (t2) => go(t2) })), /* @__PURE__ */ React.createElement(Toasts, { items: toasts, onDismiss: dismissToast }), /* @__PURE__ */ React.createElement(ConfirmDialog, { dialog, onClose: closeDialog }));
   }
   class AppBoundary extends Base {
     constructor(props) {

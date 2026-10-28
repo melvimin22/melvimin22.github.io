@@ -2796,6 +2796,7 @@ react-dom/cjs/react-dom-client.production.js:
     ["Snacks", "🥔", "USDA", "crisps", "Potato crisps", "crisps chips potato", { single: [536, 6.6, 52.9, 34.6], u: [["1 bag", 30]] }],
     ["Snacks", "🍪", "Label", "biscuits", "Biscuits", "biscuits cookies", { single: [452, 7, 70, 16], u: [["1 biscuit", 10]] }],
     ["Snacks", "🍿", "USDA", "popcorn", "Popcorn (air-popped)", "popcorn", { single: [387, 12.9, 77.8, 4.5], u: [["1 cup", 8]] }],
+    ["Drinks", "💧", "USDA", "pot-water", "Water added to the pot", "water eau cooking water pot water boiling water stock", { single: [0, 0, 0, 0], u: [["1 cup", 250], ["1 litre", 1e3], ["1.5 L bottle", 1500], ["5 litres", 5e3]], note: "For recipes: water has no calories, but it adds weight to the pot. Add what you poured in, so Sculpt’s estimate of the pot’s weight comes out right. To count water you drink, use the water glasses instead." }],
     ["Drinks", "🥤", "Label", "cola", "Cola / soda", "coke coca cola soda soft drink", { single: [42, 0, 10.6, 0], u: [["1 can (330 ml)", 330], ["1 bottle (35 cl)", 350]] }],
     ["Drinks", "🍺", "Label", "malt-drink", "Malt drink", "malt malta guinness vitamalt", { single: [60, 0.4, 14.5, 0], u: [["1 bottle (33 cl)", 330]] }],
     ["Drinks", "🍺", "USDA", "beer", "Beer (lager)", "beer biere 33 castel", { single: [43, 0.5, 3.6, 0], u: [["1 large bottle (65 cl)", 650], ["1 can (33 cl)", 330]], note: "Energy includes the alcohol, at 7 kcal per gram." }],
@@ -2875,6 +2876,11 @@ react-dom/cjs/react-dom-client.production.js:
       opt.unit = null;
       opt.byWeight = false;
       if (food.cook) opt.weighed = "raw";
+    }
+    const myPlate = num(store.get("myPlate"));
+    if (food.cat === "Your recipes" && !food.byPlate && myPlate > 0) {
+      opt.grams = String(myPlate);
+      opt.unit = "My plate";
     }
     return opt;
   }
@@ -2967,7 +2973,7 @@ react-dom/cjs/react-dom-client.production.js:
     const r = computeFood(food, opt);
     const lbl = r.label && r.label !== "normal" ? `, ${r.label}` : "";
     if (food.cnt && !opt.byWeight) return `${food.n}${lbl} (${piecesText(r.grams, food.cnt)})`;
-    const pu = food.byPlate && (food.u || []).find((u) => Math.abs(u[1] - r.grams) < 0.5);
+    const pu = food.cat === "Your recipes" && (food.u || []).find((u) => /plate|of the pot/.test(u[0]) && Math.abs(u[1] - r.grams) < 0.5 && (!opt.unit || opt.unit === u[0]));
     if (pu) return `${food.n} (${pu[0]})`;
     const raw = opt.weighed === "raw" && food.cook && opt.method !== "raw" ? " raw" : "";
     return `${food.n}${lbl} (${r0(r.grams)} g${raw})`;
@@ -2993,11 +2999,17 @@ react-dom/cjs/react-dom-client.production.js:
         n: rc.name,
         a: rc.name + " recipe",
         single: rc.per100,
-        u: plate > 0 ? [["1 plate", plate], ["½ plate", Math.round(plate / 2)], ["2 plates", plate * 2]] : [],
+        // Counted in plates: log by the plate. Weighed: log by weight, or a serving size you can adjust.
+        u: (() => {
+          const shares = [["¼ of the pot", 4], ["⅙ of the pot", 6], ["⅛ of the pot", 8], ["1/10 of the pot", 10]].map(([l, n]) => [l, Math.round(rc.weight / n)]);
+          const sizes = [["1 small serving", 150], ["1 medium serving", 250], ["1 big serving", 350]];
+          if (plate > 0) return [["1 plate", plate], ["½ plate", Math.round(plate / 2)], ["2 plates", plate * 2], ...shares];
+          return [...sizes, ...shares];
+        })(),
         mic: rc.mic || null,
         grp: rc.grp || null,
         byPlate,
-        note: byPlate ? `Your recipe: ${rc.items.length} ingredients, made about ${plates}. Log it by the plate; without a weight, the values per 100 g are only a guide.` : `Your recipe: ${rc.items.length} ingredients, ${thousands(rc.weight)} g when cooked, about ${plates}.`
+        note: byPlate ? `Your recipe: ${rc.items.length} ingredients, made about ${plates}. Log it by the plate; without a weight, the values per 100 g are only a guide.` : rc.estimated ? `Your recipe: ${rc.items.length} ingredients. Its weight is the ingredients and water added up (${thousands(rc.weight)} g), which is close enough when you cook with the lid on.` : `Your recipe: ${rc.items.length} ingredients, ${thousands(rc.weight)} g when cooked${rc.servings > 0 ? `, about ${plates}` : ""}.`
       });
     });
     return out;
@@ -3602,6 +3614,7 @@ react-dom/cjs/react-dom-client.production.js:
     // Refined oils carry none of the 12 tracked nutrients (red palm oil is left out: its vitamin A
     // depends on how it was made and cooked).
     "veg-oil": [null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "pot-water": [null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "olive-oil": [null, 0, 0, 0, 0, 0, 0, 0, 0.56, 0, 1, 0, 2],
     "fried-cabbage": [null, 2.7, 13, 25, 0, 0, 35, 40, 0.49, 14, 218, 0.22, 190],
     spinach: ["raw", 2.2, 469, 28.1, 0, 0, 194, 99, 2.71, 79, 558, 0.53, 79],
@@ -3873,6 +3886,7 @@ react-dom/cjs/react-dom-client.production.js:
     let micKcal = 0;
     let oilKcal = 0;
     let cooked = 0;
+    let put = 0;
     const grp = { vegG: 0, fruitG: 0, greens: false, legumes: false, fish: false, dairy: false };
     (items || []).forEach((it) => {
       tot.kcal += it.kcal || 0;
@@ -3880,6 +3894,7 @@ react-dom/cjs/react-dom-client.production.js:
       tot.c += it.c || 0;
       tot.f += it.f || 0;
       cooked += it.cooked || 0;
+      put += it.grams != null ? it.grams : it.cooked || 0;
       const id = it.ref && it.ref.id;
       if (id && /-oil$/.test(id)) oilKcal += it.kcal || 0;
       if (it.mic) {
@@ -3897,7 +3912,8 @@ react-dom/cjs/react-dom-client.production.js:
       if (id && MICRO_DAIRY.includes(id)) grp.dairy = true;
     });
     const base = tot.kcal - oilKcal;
-    return { tot, mic, micShare: base > 0 ? micKcal / base : 0, cooked, grp };
+    const hasWater = (items || []).some((it) => it.ref && it.ref.id === "pot-water");
+    return { tot, mic, micShare: base > 0 ? micKcal / base : 0, cooked: hasWater ? put : cooked, hasWater, grp };
   }
   function recipeFoodWeight(d, pots) {
     if (d.mode === "plates") return 0;
@@ -3910,10 +3926,12 @@ react-dom/cjs/react-dom-client.production.js:
   }
   function buildRecipe(d, pots) {
     const T = recipeTotals(d.items);
-    const plates = Math.max(1, Math.round(num(d.servings) || 1));
     const byPlate = d.mode === "plates";
+    const plates = byPlate ? Math.round(num(d.servings) || 0) : 0;
+    if (byPlate && !(plates >= 1)) return null;
     const weighed = recipeFoodWeight(d, pots);
-    const weight = byPlate ? Math.max(1, T.cooked) : weighed;
+    const estimated = !byPlate && !(weighed > 0);
+    const weight = byPlate || estimated ? Math.max(0, T.cooked) : weighed;
     if (!(weight > 0)) return null;
     const per100 = [T.tot.kcal, T.tot.p, T.tot.c, T.tot.f].map((x) => Math.round(x / weight * 1e3) / 10);
     const mic = T.micShare >= RECIPE_MIC_SHARE ? Object.fromEntries(MICRO_KEYS.map((k) => [k, Math.round(T.mic[k] / weight * 100 * 1e3) / 1e3])) : null;
@@ -3932,6 +3950,7 @@ react-dom/cjs/react-dom-client.production.js:
       mode: byPlate ? "plates" : "weighed",
       weight: Math.round(weight),
       servings: plates,
+      estimated,
       per100,
       mic,
       grp,
@@ -3945,16 +3964,16 @@ react-dom/cjs/react-dom-client.production.js:
     return pot;
   }
   const deletePot = (id) => store.set("pots", getPots().filter((x) => x.id !== id));
-  const blankRecipe = () => ({ id: null, name: "", items: [], mode: "weighed", weight: "", potId: null, full: "", servings: "4" });
+  const blankRecipe = () => ({ id: null, name: "", items: [], mode: "weighed", weight: "", potId: null, full: "", servings: "" });
   const recipeDraftFrom = (rc) => ({
     id: rc.id,
     name: rc.name,
     items: rc.items || [],
     mode: rc.mode === "plates" ? "plates" : "weighed",
-    weight: rc.mode === "plates" ? "" : String(rc.weight || ""),
+    weight: rc.mode === "plates" || rc.estimated ? "" : String(rc.weight || ""),
     potId: null,
     full: "",
-    servings: String(rc.servings || 4)
+    servings: rc.mode === "plates" ? String(rc.servings || "") : ""
   });
   const GLUTE_SLOTS = [
     {
@@ -6107,7 +6126,9 @@ react-dom/cjs/react-dom-client.production.js:
   function PortionView({ food, opt, setOpt, actionLabel, onAction }) {
     const r = computeFood(food, opt);
     const options = foodOptions(food);
-    const units = [...unitsFor(food, opt), ...handUnits(food, opt)];
+    const isRecipe = food.cat === "Your recipes" && !food.byPlate;
+    const [myPlate, setMyPlate] = useState(() => num(store.get("myPlate")) || 0);
+    const units = [...isRecipe && myPlate > 0 ? [["My plate", myPlate]] : [], ...unitsFor(food, opt), ...handUnits(food, opt)];
     const isCook = !!food.cook;
     const set = (patch) => setOpt((o) => ({ ...o, ...patch }));
     const unitObj = units.find((x) => x[0] === opt.unit);
@@ -6145,7 +6166,12 @@ react-dom/cjs/react-dom-client.production.js:
         suffix: Math.abs(pieces - 1) < 0.01 ? food.cnt[0] : food.cnt[1],
         "aria-label": `Number of ${food.cnt[1]}`
       }
-    ), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "One more", onClick: () => setCount(pieces < 1 ? 1 : Math.floor(pieces + 1e-9) + 1), className: "press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-raised" }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug text-muted" }, "1 ", food.cnt[0], " is about ", per, " g", food.cook ? " before cooking" : "", ". ", /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => set({ byWeight: true, weighed: "cooked" }), className: "font-semibold text-accentink" }, "Weigh it instead"))) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Amount"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "Less", onClick: () => step(-1), className: "press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-raised" }, /* @__PURE__ */ React.createElement(Icon, { name: "Minus", size: 18 })), /* @__PURE__ */ React.createElement(Field, { className: "min-w-0 flex-1", value: String(opt.grams), onChange: (v) => set({ grams: v }), suffix: "g", "aria-label": "Amount in grams" }), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "More", onClick: () => step(1), className: "press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-raised" }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 18 }))), units.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, units.map((u) => /* @__PURE__ */ React.createElement(Chip, { key: u[0], on: opt.unit === u[0] && Math.abs((num(opt.grams) || 0) - u[1]) < 0.01, onClick: () => set({ grams: String(u[1]), unit: u[0] }) }, u[0], " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium opacity-60" }, u[1], " g")))), units.some((u) => HAND_LABELS.includes(u[0])) && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug text-muted" }, "No scale? Hand sizes are a rough guide: a palm is your palm without the fingers, a fist is your closed fist."), countText && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] text-muted" }, countText), food.cnt && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px]" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "One more", onClick: () => setCount(pieces < 1 ? 1 : Math.floor(pieces + 1e-9) + 1), className: "press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-raised" }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug text-muted" }, "1 ", food.cnt[0], " is about ", per, " g", food.cook ? " before cooking" : "", ". ", /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => set({ byWeight: true, weighed: "cooked" }), className: "font-semibold text-accentink" }, "Weigh it instead"))) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "Amount"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "Less", onClick: () => step(-1), className: "press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-raised" }, /* @__PURE__ */ React.createElement(Icon, { name: "Minus", size: 18 })), /* @__PURE__ */ React.createElement(Field, { className: "min-w-0 flex-1", value: String(opt.grams), onChange: (v) => set({ grams: v }), suffix: "g", "aria-label": "Amount in grams" }), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "More", onClick: () => step(1), className: "press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-raised" }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 18 }))), units.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, units.map((u) => /* @__PURE__ */ React.createElement(Chip, { key: u[0], on: opt.unit === u[0] && Math.abs((num(opt.grams) || 0) - u[1]) < 0.01, onClick: () => set({ grams: String(u[1]), unit: u[0] }) }, u[0], " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium opacity-60" }, u[1], " g")))), units.some((u) => HAND_LABELS.includes(u[0])) && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug text-muted" }, "No scale? Hand sizes are a rough guide: a palm is your palm without the fingers, a fist is your closed fist."), countText && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] text-muted" }, countText), isRecipe && num(opt.grams) > 0 && Math.abs(num(opt.grams) - myPlate) > 0.5 && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px] leading-snug text-muted" }, "Serve in the same plate each time?", " ", /* @__PURE__ */ React.createElement("button", { type: "button", className: "font-semibold text-accentink", onClick: () => {
+      const g = r0(num(opt.grams));
+      store.set("myPlate", g);
+      setMyPlate(g);
+      set({ unit: "My plate" });
+    } }, "Save ", thousands(num(opt.grams)), " g as my plate")), food.cnt && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[12px]" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setCount(Math.max(1, Math.round(pieces)));
       set({ byWeight: false });
     }, className: "font-semibold text-accentink" }, "Count ", food.cnt[1], " instead"))), /* @__PURE__ */ React.createElement(ResultCard, { r, title: counting ? `${piecesText(r.grams, food.cnt)}, about ${r0(food.cook ? r.cookedGrams : r.grams)} g${food.cook ? " cooked" : ""}` : rawW ? `${r0(r.grams)} g raw, about ${r0(r.cookedGrams)} g cooked` : `${r0(r.grams)} g` }), /* @__PURE__ */ React.createElement(Workings, { lines: r.lines }), /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", onClick: onAction, disabled: !(r.grams > 0) }, actionLabel));
@@ -6280,19 +6306,32 @@ react-dom/cjs/react-dom-client.production.js:
     const view = res ? { kcal: res.kcal * scale, p: res.p * scale, c: res.c * scale, f: res.f * scale } : null;
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Describe the food", value: q, onChange: setQ, inputMode: "text", placeholder: "e.g. fried tilapia with pepper sauce" }), /* @__PURE__ */ React.createElement(Field, { label: "Amount (optional)", suffix: "g", value: grams, onChange: setGrams, placeholder: "Blank for a typical serving" }), busy ? /* @__PURE__ */ React.createElement(Btn, { variant: "soft", size: "lg", className: "w-full", onClick: () => ctl.current && ctl.current.abort() }, /* @__PURE__ */ React.createElement(Icon, { name: "Square", size: 16 }), "Thinking… tap to stop") : /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", onClick: ask }, /* @__PURE__ */ React.createElement(Icon, { name: "Sparkles", size: 18 }), res ? "Estimate again" : "Estimate"), err && /* @__PURE__ */ React.createElement("p", { className: "text-[13px] font-medium text-danger", role: "alert" }, err), res && /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement(ResultCard, { r: view, title: `${res.name}, ${res.confidence} confidence` }), res.assumptions && /* @__PURE__ */ React.createElement("p", { className: "text-[13px] leading-snug text-muted" }, res.assumptions), /* @__PURE__ */ React.createElement(Field, { label: "Amount you ate", suffix: "g", value: eat, onChange: setEat }), /* @__PURE__ */ React.createElement("p", { className: "text-[12px] leading-snug text-muted" }, "This is Claude's estimate, not a measured value, and it's marked as an estimate in your log."), /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", disabled: !(scale > 0), onClick: () => onLog({ id: uid(), name: `${res.name} (${r0(num(eat))} g)`, kcal: r1(view.kcal), p: r1(view.p), c: r1(view.c), f: r1(view.f), at: Date.now(), ref: { kind: "ai", note: res.assumptions, conf: res.confidence } }) }, "Log estimate")));
   }
+  function BathroomScale({ unit, pot, onUse }) {
+    const [a, setA] = useState("");
+    const [b, setB] = useState("");
+    const g = Math.round((wIn(num(a), unit) - wIn(num(b), unit)) * 1e3);
+    const ok = num(a) > 0 && num(b) > 0 && g > 0 && g < 6e4;
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-2 rounded-[20px] bg-raised p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] leading-snug text-muted" }, "Stand on the scale holding the ", pot ? "full pot" : "pot", ", then step on again without it. The difference is the weight of what you held."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(Field, { label: "You + pot", suffix: wUnit(unit), value: a, onChange: setA, inputMode: "decimal" }), /* @__PURE__ */ React.createElement(Field, { label: "You alone", suffix: wUnit(unit), value: b, onChange: setB, inputMode: "decimal" })), /* @__PURE__ */ React.createElement(Btn, { size: "sm", className: "w-full", disabled: !ok, onClick: () => onUse(g) }, ok ? `Use ${thousands(g)} g` : "Enter both weights"));
+  }
   function RecipeView({ draft, setDraft, onAddIngredient, onSave, onSaveNew }) {
+    const { profile } = useApp();
+    const unit = profile && profile.units;
+    const [scaleFor, setScaleFor] = useState(null);
     const [pots, setPots] = useState(getPots);
     const [adding, setAdding] = useState(false);
     const [potName, setPotName] = useState("");
     const [potG, setPotG] = useState("");
     const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
     const T = recipeTotals(draft.items);
-    const plates = Math.max(1, Math.round(num(draft.servings) || 1));
     const byPlate = draft.mode === "plates";
+    const plates = Math.round(num(draft.servings) || 0);
     const pot = pots.find((x) => x.id === draft.potId) || null;
     const food = recipeFoodWeight(draft, pots);
-    const perPlate = { kcal: T.tot.kcal / plates, p: T.tot.p / plates, c: T.tot.c / plates, f: T.tot.f / plates };
-    const ready = draft.items.length > 0 && !!draft.name.trim() && (byPlate || food > 0);
+    const estimated = !byPlate && !(food > 0);
+    const weight = estimated ? T.cooked : food;
+    const shown = byPlate ? plates >= 1 ? { kcal: T.tot.kcal / plates, p: T.tot.p / plates, c: T.tot.c / plates, f: T.tot.f / plates } : null : weight > 0 ? { kcal: T.tot.kcal / weight * 100, p: T.tot.p / weight * 100, c: T.tot.c / weight * 100, f: T.tot.f / weight * 100 } : null;
+    const ready = draft.items.length > 0 && !!draft.name.trim() && (byPlate ? plates >= 1 : weight > 0);
+    const missing = !draft.name.trim() ? "Give the recipe a name to save it." : !draft.items.length ? "Add at least one ingredient." : byPlate && !(plates >= 1) ? "Enter how many plates it made." : "";
     const addPot = () => {
       const g = num(potG);
       if (!(g > 0 && g < 2e4)) return;
@@ -6308,7 +6347,24 @@ react-dom/cjs/react-dom-client.production.js:
       setPots(getPots());
       if (draft.potId === id) set({ potId: null });
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement(Field, { label: "Recipe name", value: draft.name, onChange: (v) => set({ name: v }), inputMode: "text", placeholder: "e.g. My fried cabbage, Sunday ndolé", maxLength: 50 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[13px] font-medium text-muted" }, "What went into the pot"), draft.items.length ? /* @__PURE__ */ React.createElement("ul", { className: "divide-y divide-line/50 rounded-[20px] bg-raised px-4" }, draft.items.map((it) => /* @__PURE__ */ React.createElement("li", { key: it.id, className: "flex items-center gap-2 py-2.5" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-[14px] font-semibold leading-snug" }, it.name), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[13px] tabular-nums text-muted" }, thousands(it.kcal), " kcal"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Remove ${it.name}`, onClick: () => set({ items: draft.items.filter((x) => x.id !== it.id) }), className: "press grid h-9 w-9 shrink-0 place-items-center rounded-lg text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "X", size: 16 }))))) : /* @__PURE__ */ React.createElement("p", { className: "rounded-2xl bg-raised p-4 text-[14px] leading-snug text-muted" }, "Add everything you put in the pot, the way it went in: raw meat and fish, dry rice or beans, tomatoes and onions by the piece, oil by the spoon or by the bottle. Any meal works."), /* @__PURE__ */ React.createElement(Btn, { variant: "soft", className: "mt-2 w-full", onClick: onAddIngredient }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 18 }), "Add ingredient"), draft.items.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 px-1 text-[13px] leading-snug text-muted" }, "The whole pot: ", thousands(T.tot.kcal), " kcal and ", r0(T.tot.p), " g of protein.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "How much did it make?"), /* @__PURE__ */ React.createElement(Segmented, { size: "sm", label: "How much it made", options: [{ value: "weighed", label: "I weighed it" }, { value: "plates", label: "I counted plates" }], value: byPlate ? "plates" : "weighed", onChange: (v) => set({ mode: v }) })), byPlate ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(Field, { label: "How many plates did it make?", value: draft.servings, onChange: (v) => set({ servings: v }), inputMode: "numeric", placeholder: "4" }), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 px-1 text-[12px] leading-snug text-muted" }, "No scale needed. Count plates of the size you usually serve, and you’ll log it by the plate or half plate.")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(Chip, { on: !pot, onClick: () => set({ potId: null }) }, "Food only"), pots.map((pt) => /* @__PURE__ */ React.createElement(Chip, { key: pt.id, on: draft.potId === pt.id, onClick: () => set({ potId: pt.id }) }, pt.name, " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium opacity-60" }, thousands(pt.g), " g"))), /* @__PURE__ */ React.createElement(Chip, { on: adding, onClick: () => setAdding((a) => !a) }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 14 }), "Add a pot")), adding && /* @__PURE__ */ React.createElement("div", { className: "space-y-2 rounded-[20px] bg-raised p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] leading-snug text-muted" }, "Weigh the empty pot once. Next time, weigh it full and Sculpt takes the pot off for you."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(Field, { label: "Pot name", value: potName, onChange: setPotName, inputMode: "text", placeholder: "Black pot", maxLength: 30 }), /* @__PURE__ */ React.createElement(Field, { label: "Empty pot", suffix: "g", value: potG, onChange: setPotG, placeholder: "900" })), /* @__PURE__ */ React.createElement(Btn, { size: "sm", className: "w-full", disabled: !(num(potG) > 0), onClick: addPot }, "Save pot")), pot ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(Field, { label: "Full pot weight", suffix: "g", value: draft.full, onChange: (v) => set({ full: v }), hint: food > 0 ? `That’s ${thousands(food)} g of food once the ${thousands(pot.g)} g pot is taken off.` : `Weigh the pot with the food in it. The empty pot is ${thousands(pot.g)} g.` }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removePot(pot.id), className: "mt-1 px-1 text-[12px] font-semibold text-muted" }, "Remove this pot")) : /* @__PURE__ */ React.createElement(Field, { label: "Weight of the cooked food", suffix: "g", value: draft.weight, onChange: (v) => set({ weight: v }), placeholder: T.cooked ? String(r0(T.cooked)) : "0", hint: "Weigh the food alone, or pick your pot above and weigh it full." }), /* @__PURE__ */ React.createElement(Field, { label: "Plates it makes", value: draft.servings, onChange: (v) => set({ servings: v }), inputMode: "numeric", placeholder: "4" })), draft.items.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ResultCard, { r: perPlate, title: plates === 1 ? "The whole pot" : `One plate (1 of ${plates})` }), !byPlate && food > 0 && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[13px] leading-snug text-muted" }, thousands(T.tot.kcal / food * 100), " kcal per 100 g. One plate is about ", thousands(food / plates), " g."), T.micShare < RECIPE_MIC_SHARE && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[12px] leading-snug text-muted" }, "Sculpt has vitamin data for only part of this pot, so its vitamins won’t count in Nutrients.")), /* @__PURE__ */ React.createElement("p", { className: "text-[12px] leading-snug text-muted" }, "Cooking changes the water, not the nutrients, so the pot holds exactly what you put in. Weighing gives values per 100 g; counting plates is enough to log by the plate."), /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", disabled: !ready, onClick: onSave }, draft.id ? "Save changes" : "Save recipe"), draft.id && /* @__PURE__ */ React.createElement(Btn, { variant: "soft", className: "w-full", disabled: !ready, onClick: onSaveNew }, /* @__PURE__ */ React.createElement(Icon, { name: "Copy", size: 17 }), "Save as a new recipe"));
+    const hasWater = draft.items.some((it) => it.ref && it.ref.id === "pot-water");
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement(Field, { label: "Recipe name", value: draft.name, onChange: (v) => set({ name: v }), inputMode: "text", placeholder: "e.g. My fried cabbage, Sunday ndolé", maxLength: 50 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[13px] font-medium text-muted" }, "What went into the pot"), draft.items.length ? /* @__PURE__ */ React.createElement("ul", { className: "divide-y divide-line/50 rounded-[20px] bg-raised px-4" }, draft.items.map((it) => /* @__PURE__ */ React.createElement("li", { key: it.id, className: "flex items-center gap-2 py-2.5" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-[14px] font-semibold leading-snug" }, it.name), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[13px] tabular-nums text-muted" }, thousands(it.kcal), " kcal"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Remove ${it.name}`, onClick: () => set({ items: draft.items.filter((x) => x.id !== it.id) }), className: "press grid h-9 w-9 shrink-0 place-items-center rounded-lg text-muted" }, /* @__PURE__ */ React.createElement(Icon, { name: "X", size: 16 }))))) : /* @__PURE__ */ React.createElement("p", { className: "rounded-2xl bg-raised p-4 text-[14px] leading-snug text-muted" }, "Add everything you put in the pot, the way it went in: raw meat and fish, dry rice or beans, tomatoes and onions by the piece, oil by the spoon or by the bottle, and the water you pour in. Any meal works."), /* @__PURE__ */ React.createElement(Btn, { variant: "soft", className: "mt-2 w-full", onClick: onAddIngredient }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 18 }), "Add ingredient"), draft.items.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 px-1 text-[13px] leading-snug text-muted" }, "The whole pot: ", thousands(T.tot.kcal), " kcal and ", r0(T.tot.p), " g of protein.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[13px] font-medium text-muted" }, "How much did it make?"), /* @__PURE__ */ React.createElement(Segmented, { size: "sm", label: "How much it made", options: [{ value: "weighed", label: "I weighed it" }, { value: "plates", label: "I counted plates" }], value: byPlate ? "plates" : "weighed", onChange: (v) => set({ mode: v }) })), byPlate ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(Field, { label: "How many plates did it make?", value: draft.servings, onChange: (v) => set({ servings: v }), inputMode: "numeric", placeholder: "e.g. 4" }), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 px-1 text-[12px] leading-snug text-muted" }, "No scale needed. Count plates of the size you usually serve, and you’ll log it by the plate or half plate.")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(Chip, { on: !pot, onClick: () => set({ potId: null }) }, "Food only"), pots.map((pt) => /* @__PURE__ */ React.createElement(Chip, { key: pt.id, on: draft.potId === pt.id, onClick: () => set({ potId: pt.id }) }, pt.name, " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium opacity-60" }, thousands(pt.g), " g"))), /* @__PURE__ */ React.createElement(Chip, { on: adding, onClick: () => setAdding((a) => !a) }, /* @__PURE__ */ React.createElement(Icon, { name: "Plus", size: 14 }), "Add a pot")), adding && /* @__PURE__ */ React.createElement("div", { className: "space-y-2 rounded-[20px] bg-raised p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[13px] leading-snug text-muted" }, "Weigh the empty pot once. Next time, weigh it full and Sculpt takes the pot off for you."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(Field, { label: "Pot name", value: potName, onChange: setPotName, inputMode: "text", placeholder: "Black pot", maxLength: 30 }), /* @__PURE__ */ React.createElement(Field, { label: "Empty pot", suffix: "g", value: potG, onChange: setPotG, placeholder: "900" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setScaleFor(scaleFor === "pot" ? null : "pot"), className: "px-1 text-[12px] font-semibold text-accentink" }, "No kitchen scale? Use a bathroom scale"), scaleFor === "pot" && /* @__PURE__ */ React.createElement(BathroomScale, { unit, pot: false, onUse: (g) => {
+      setPotG(String(g));
+      setScaleFor(null);
+    } }), /* @__PURE__ */ React.createElement(Btn, { size: "sm", className: "w-full", disabled: !(num(potG) > 0), onClick: addPot }, "Save pot")), pot ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(Field, { label: "Full pot weight", suffix: "g", value: draft.full, onChange: (v) => set({ full: v }), hint: food > 0 ? `That’s ${thousands(food)} g of food once the ${thousands(pot.g)} g pot is taken off.` : `Weigh the pot with the food in it. The empty pot is ${thousands(pot.g)} g.` }), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-4 px-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setScaleFor(scaleFor === "full" ? null : "full"), className: "text-[12px] font-semibold text-accentink" }, "No kitchen scale? Use a bathroom scale"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removePot(pot.id), className: "text-[12px] font-semibold text-muted" }, "Remove this pot")), scaleFor === "full" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement(BathroomScale, { unit, pot: true, onUse: (g) => {
+      set({ full: String(g) });
+      setScaleFor(null);
+    } }))) : /* @__PURE__ */ React.createElement(
+      Field,
+      {
+        label: "Weight of the cooked food (optional)",
+        suffix: "g",
+        value: draft.weight,
+        onChange: (v) => set({ weight: v }),
+        placeholder: "Not weighed",
+        hint: food > 0 ? "Weighed: exact values per 100 g." : hasWater ? `Leave empty: Sculpt uses the ingredients and water added up (${thousands(T.cooked)} g). With the lid on, that’s close enough.` : `Leave empty and Sculpt adds up the ingredients (${thousands(T.cooked)} g). Did you pour in water? Add it as an ingredient, “Water added to the pot”, or the weight comes out too low.`
+      }
+    )), draft.items.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, shown && /* @__PURE__ */ React.createElement(ResultCard, { r: shown, title: byPlate ? `One plate (1 of ${plates})` : "Per 100 g" }), !byPlate && !pot && weight > 0 && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[13px] leading-snug text-muted" }, "That’s ", thousands(weight), " g of food", estimated ? ", going by the ingredients" : "", ". Log it by weighing your plate, or pick a serving size."), T.micShare < RECIPE_MIC_SHARE && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[12px] leading-snug text-muted" }, "Sculpt has vitamin data for only part of this pot, so its vitamins won’t count in Nutrients.")), /* @__PURE__ */ React.createElement("p", { className: "text-[12px] leading-snug text-muted" }, "Cooking changes the water, not the nutrients, so the pot holds exactly what you put in. Weighing gives values per 100 g; counting plates is enough to log by the plate."), !ready && missing && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[13px] font-medium text-danger", role: "alert" }, missing), /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", disabled: !ready, onClick: onSave }, draft.id ? "Save changes" : "Save recipe"), draft.id && /* @__PURE__ */ React.createElement(Btn, { variant: "soft", className: "w-full", disabled: !ready, onClick: onSaveNew }, /* @__PURE__ */ React.createElement(Icon, { name: "Copy", size: 17 }), "Save as a new recipe"));
   }
   const WaterGlass = ({ full }) => /* @__PURE__ */ React.createElement("svg", { viewBox: "0 0 24 32", className: "h-11 w-full", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("path", { d: "M3.5 3h17l-2 26h-13z", className: "sand", style: { fill: "rgb(var(--water))", transform: `scaleY(${full ? 1 : 0})`, transformOrigin: "12px 29px" } }), /* @__PURE__ */ React.createElement("path", { d: "M3.5 3h17l-2 26h-13z", fill: "none", strokeWidth: "1.6", strokeLinejoin: "round", style: { stroke: "rgb(var(--water))", opacity: full ? 1 : 0.45 } }));
   function WaterTracker({ date }) {

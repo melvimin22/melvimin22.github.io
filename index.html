@@ -2594,6 +2594,7 @@ react-dom/cjs/react-dom-client.production.js:
       { id: "raw", label: "Raw", y: 1, fr: 1, oil: 0 },
       { id: "boiled", label: "Boiled, steamed or in soup", short: "boiled", y: 0.85, fr: 1, oil: 0 },
       { id: "grilled", label: "Grilled, baked or braised", short: "grilled", y: 0.78, fr: 0.95, oil: 0 },
+      { id: "airfried", label: "Air-fried (no oil)", short: "air-fried", tabAs: "grilled", y: 0.78, fr: 0.95, oil: 0 },
       { id: "smoked", label: "Smoked", short: "smoked", y: 0.6, fr: 0.95, oil: 0 },
       { id: "fried", label: "Fried", short: "fried", y: 0.72, fr: 0.9, oil: 7 },
       { id: "battered", label: "Battered or breaded, then fried", short: "battered and fried", y: 0.78, fr: 0.9, oil: 11, bc: 8, bp: 1.2, dil: 0.9 }
@@ -2602,6 +2603,7 @@ react-dom/cjs/react-dom-client.production.js:
       { id: "raw", label: "Raw", y: 1, fr: 1, oil: 0 },
       { id: "boiled", label: "Boiled (plain, no sauce)", short: "boiled", y: 0.7, fr: 0.85, oil: 0 },
       { id: "grilled", label: "Grilled or roasted", short: "grilled", y: 0.72, fr: 0.85, oil: 0 },
+      { id: "airfried", label: "Air-fried (no oil)", short: "air-fried", tabAs: "grilled", y: 0.72, fr: 0.85, oil: 0 },
       { id: "fried", label: "Fried", short: "fried", y: 0.7, fr: 0.9, oil: 6 },
       { id: "battered", label: "Breaded, then fried", short: "breaded and fried", y: 0.78, fr: 0.9, oil: 10, bc: 9, bp: 1.5, dil: 0.9 }
     ],
@@ -2609,17 +2611,20 @@ react-dom/cjs/react-dom-client.production.js:
       { id: "raw", label: "Raw", y: 1, fr: 1, oil: 0 },
       { id: "boiled", label: "Boiled (plain, no sauce)", short: "boiled", y: 0.75, fr: 0.9, oil: 0 },
       { id: "grilled", label: "Grilled or roasted", short: "grilled", y: 0.73, fr: 0.8, oil: 0 },
+      { id: "airfried", label: "Air-fried (no oil)", short: "air-fried", tabAs: "grilled", y: 0.73, fr: 0.8, oil: 0 },
       { id: "fried", label: "Fried", short: "fried", y: 0.72, fr: 0.85, oil: 6 },
       { id: "battered", label: "Battered, then fried", short: "battered and fried", y: 0.8, fr: 0.85, oil: 11, bc: 9.4, bp: 1.5, dil: 0.88 }
     ],
     plantain: [
       { id: "boiled", label: "Boiled", short: "boiled", y: 1.05, fr: 1, oil: 0 },
       { id: "grilled", label: "Roasted (boli)", short: "roasted", y: 0.85, fr: 1, oil: 0 },
+      { id: "airfried", label: "Air-fried (no oil)", short: "air-fried", tabAs: "grilled", y: 0.85, fr: 1, oil: 0 },
       { id: "fried", label: "Fried (dodo)", short: "fried", y: 0.72, fr: 1, oil: 9 }
     ],
     tuber: [
       { id: "boiled", label: "Boiled", short: "boiled", y: 1, fr: 1, oil: 0 },
       { id: "grilled", label: "Roasted or baked", short: "roasted", y: 0.8, fr: 1, oil: 0 },
+      { id: "airfried", label: "Air-fried (no oil)", short: "air-fried", tabAs: "grilled", y: 0.8, fr: 1, oil: 0 },
       { id: "fried", label: "Fried (chips)", short: "fried", y: 0.55, fr: 1, oil: 13 }
     ]
   };
@@ -2914,15 +2919,16 @@ react-dom/cjs/react-dom-client.production.js:
       const m = methodOf(food, opt.method);
       const raw = food.raw;
       label = m.id === "raw" ? "raw" : m.short || lowerFirst(m.label);
-      const tab = food.tab && food.tab[m.id];
+      const tab = food.tab && (food.tab[m.id] || m.tabAs && food.tab[m.tabAs]);
       per = m.id === "raw" ? raw.slice() : tab ? tab.slice() : cookedPer100(raw, m);
       lines.push(`Raw ${lowerFirst(food.n)}${ty ? `, ${ty.short}` : ""}: ${perLine(raw)} per 100 g (${src}).`);
+      if (m.id === "airfried") lines.push("Air-fried without oil: water leaves the food and no fat is added. If you sprayed or brushed on oil, add that oil as its own food.");
       if (ty) {
         label = `${ty.short}, ${label}`;
         if (ty.note || food.types.note) lines.push(ty.note || food.types.note);
       }
       if (m.id !== "raw") {
-        if (tab) lines.push(`${m.label}: the measured value for the cooked food is ${perLine(per)} per 100 g.`);
+        if (tab) lines.push(m.tabAs && !food.tab[m.id] ? `${m.label} cooks like grilling or baking, so it uses the measured value for dry-heat cooking: ${perLine(per)} per 100 g.` : `${m.label}: the measured value for the cooked food is ${perLine(per)} per 100 g.`);
         else {
           const bits = [`about ${pct(m.y)} of the raw weight remains after cooking`];
           if (m.fr < 1) bits.push(`${pct(1 - m.fr)} of the fat drips out`);
@@ -3072,6 +3078,7 @@ react-dom/cjs/react-dom-client.production.js:
     return { key: id + label, e: food.e, n: label, kcal: r.kcal, p: r.p, c: r.c, f: r.f, make: () => ({ ...makeFoodItem(food, opt), name: label }) };
   };
   const METHOD_WORDS = {
+    airfried: "airfried",
     fried: "fried",
     fry: "fried",
     frying: "fried",
@@ -3134,7 +3141,7 @@ react-dom/cjs/react-dom-client.production.js:
     return score;
   }
   function parseQuery(query) {
-    const tokens = norm(query).split(" ").filter(Boolean);
+    const tokens = norm(query).replace(/\bair ?fr(?:y|ied|ier|yer)\w*/g, "airfried").split(" ").filter(Boolean);
     let hint = null;
     const words = [];
     tokens.forEach((t2) => {
@@ -3887,6 +3894,7 @@ react-dom/cjs/react-dom-client.production.js:
     let oilKcal = 0;
     let cooked = 0;
     let put = 0;
+    let water = 0;
     const grp = { vegG: 0, fruitG: 0, greens: false, legumes: false, fish: false, dairy: false };
     (items || []).forEach((it) => {
       tot.kcal += it.kcal || 0;
@@ -3896,6 +3904,7 @@ react-dom/cjs/react-dom-client.production.js:
       cooked += it.cooked || 0;
       put += it.grams != null ? it.grams : it.cooked || 0;
       const id = it.ref && it.ref.id;
+      if (id === "pot-water") water += it.grams || 0;
       if (id && /-oil$/.test(id)) oilKcal += it.kcal || 0;
       if (it.mic) {
         MICRO_KEYS.forEach((k) => {
@@ -3913,7 +3922,9 @@ react-dom/cjs/react-dom-client.production.js:
     });
     const base = tot.kcal - oilKcal;
     const hasWater = (items || []).some((it) => it.ref && it.ref.id === "pot-water");
-    return { tot, mic, micShare: base > 0 ? micKcal / base : 0, cooked: hasWater ? put : cooked, hasWater, grp };
+    const inPot = put - water;
+    const soak = Math.max(0, cooked - water - inPot);
+    return { tot, mic, micShare: base > 0 ? micKcal / base : 0, cooked: hasWater ? put : cooked, hasWater, water, inPot, soak, grp };
   }
   function recipeFoodWeight(d, pots) {
     if (d.mode === "plates") return 0;
@@ -6362,7 +6373,7 @@ react-dom/cjs/react-dom-client.production.js:
         value: draft.weight,
         onChange: (v) => set({ weight: v }),
         placeholder: "Not weighed",
-        hint: food > 0 ? "Weighed: exact values per 100 g." : hasWater ? `Leave empty: Sculpt uses the ingredients and water added up (${thousands(T.cooked)} g). With the lid on, that’s close enough.` : `Leave empty and Sculpt adds up the ingredients (${thousands(T.cooked)} g). Did you pour in water? Add it as an ingredient, “Water added to the pot”, or the weight comes out too low.`
+        hint: food > 0 ? "Weighed: exact values per 100 g." : hasWater ? `Leave empty: the pot weighs what went in, ${thousands(T.inPot)} g of food plus ${thousands(T.water)} g of water, so ${thousands(T.cooked)} g. With the lid on, that’s close enough.${T.soak > 150 && T.water < T.soak * 0.85 ? ` Check the water: dry rice, beans or garri usually soak up about ${thousands(T.soak)} g, and you’ve recorded ${thousands(T.water)} g. If you topped up while it cooked or used stock, add that too. If not, your food is thicker than usual, and these calories are right.` : ""}` : `Leave empty and Sculpt adds up the ingredients (${thousands(T.cooked)} g). Did you pour in water? Add it as an ingredient, “Water added to the pot”, or the weight comes out too low.`
       }
     )), draft.items.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, shown && /* @__PURE__ */ React.createElement(ResultCard, { r: shown, title: byPlate ? `One plate (1 of ${plates})` : "Per 100 g" }), !byPlate && !pot && weight > 0 && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[13px] leading-snug text-muted" }, "That’s ", thousands(weight), " g of food", estimated ? ", going by the ingredients" : "", ". Log it by weighing your plate, or pick a serving size."), T.micShare < RECIPE_MIC_SHARE && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[12px] leading-snug text-muted" }, "Sculpt has vitamin data for only part of this pot, so its vitamins won’t count in Nutrients.")), /* @__PURE__ */ React.createElement("p", { className: "text-[12px] leading-snug text-muted" }, "Cooking changes the water, not the nutrients, so the pot holds exactly what you put in. Weighing gives values per 100 g; counting plates is enough to log by the plate."), !ready && missing && /* @__PURE__ */ React.createElement("p", { className: "px-1 text-[13px] font-medium text-danger", role: "alert" }, missing), /* @__PURE__ */ React.createElement(Btn, { size: "lg", className: "w-full", disabled: !ready, onClick: onSave }, draft.id ? "Save changes" : "Save recipe"), draft.id && /* @__PURE__ */ React.createElement(Btn, { variant: "soft", className: "w-full", disabled: !ready, onClick: onSaveNew }, /* @__PURE__ */ React.createElement(Icon, { name: "Copy", size: 17 }), "Save as a new recipe"));
   }
